@@ -1,5 +1,4 @@
 repo: 09fe40627f03a0f9c3e6ac78b22ac93da23f9fdf
-node: 5dcc9d3a928c400b41a3547d7bfee10340519e56
+node: 1d3b6e448e01ec40b392ef78b7e55a86249fbe68
 branch: stable
-latesttag: 1.8
-latesttagdistance: 1
+tag: 1.9
