@@ -1,3 +1,6 @@
+# Prerequisites
+*.d
+
 # Object files
 *.o
 *.ko
@@ -39,3 +42,7 @@
 Debug/
 Release/
 x64/
+
+*.pc
+*.rc
+*.manifest
