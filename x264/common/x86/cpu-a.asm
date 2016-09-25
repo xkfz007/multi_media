@@ -1,11 +1,11 @@
 ;*****************************************************************************
-;* cpu-a.asm: h264 encoder library
+;* cpu-a.asm: x86 cpu utilities
 ;*****************************************************************************
-;* Copyright (C) 2003-2008 x264 project
+;* Copyright (C) 2003-2014 x264 project
 ;*
 ;* Authors: Laurent Aimar <fenrir@via.ecp.fr>
 ;*          Loren Merritt <lorenm@u.washington.edu>
-;*          Jason Garrett-Glaser <darkshikari@gmail.com>
+;*          Fiona Glaser <fiona@x264.com>
 ;*
 ;* This program is free software; you can redistribute it and/or modify
 ;* it under the terms of the GNU General Public License as published by
@@ -20,39 +20,79 @@
 ;* You should have received a copy of the GNU General Public License
 ;* along with this program; if not, write to the Free Software
 ;* Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02111, USA.
+;*
+;* This program is also available under a commercial proprietary license.
+;* For more information, contact us at licensing@x264.com.
 ;*****************************************************************************
 
 %include "x86inc.asm"
 
 SECTION .text
 
-%ifdef ARCH_X86_64
+;-----------------------------------------------------------------------------
+; void cpu_cpuid( int op, int *eax, int *ebx, int *ecx, int *edx )
+;-----------------------------------------------------------------------------
+cglobal cpu_cpuid, 5,7
+    push rbx
+    push  r4
+    push  r3
+    push  r2
+    push  r1
+    mov  eax, r0d
+    xor  ecx, ecx
+    cpuid
+    pop   r4
+    mov [r4], eax
+    pop   r4
+    mov [r4], ebx
+    pop   r4
+    mov [r4], ecx
+    pop   r4
+    mov [r4], edx
+    pop  rbx
+    RET
 
 ;-----------------------------------------------------------------------------
-; int x264_cpu_cpuid( int op, int *eax, int *ebx, int *ecx, int *edx )
+; void cpu_xgetbv( int op, int *eax, int *edx )
 ;-----------------------------------------------------------------------------
-cglobal x264_cpu_cpuid, 5,7
-    push    rbx
-    mov     r11,   r1
-    mov     r10,   r2
-    movifnidn r9,  r3
-    movifnidn r8,  r4
-    mov     eax,   r0d
-    cpuid
-    mov     [r11], eax
-    mov     [r10], ebx
-    mov     [r9],  ecx
-    mov     [r8],  edx
-    pop     rbx
+cglobal cpu_xgetbv, 3,7
+    push  r2
+    push  r1
+    mov  ecx, r0d
+    xgetbv
+    pop   r4
+    mov [r4], eax
+    pop   r4
+    mov [r4], edx
     RET
+
+%if ARCH_X86_64
+
+;-----------------------------------------------------------------------------
+; void stack_align( void (*func)(void*), void *arg );
+;-----------------------------------------------------------------------------
+cglobal stack_align
+    push rbp
+    mov  rbp, rsp
+%if WIN64
+    sub  rsp, 32 ; shadow space
+%endif
+    and  rsp, ~31
+    mov  rax, r0
+    mov   r0, r1
+    mov   r1, r2
+    mov   r2, r3
+    call rax
+    leave
+    ret
 
 %else
 
 ;-----------------------------------------------------------------------------
-; int x264_cpu_cpuid_test( void )
+; int cpu_cpuid_test( void )
 ; return 0 if unsupported
 ;-----------------------------------------------------------------------------
-cglobal x264_cpu_cpuid_test
+cglobal cpu_cpuid_test
     pushfd
     push    ebx
     push    ebp
@@ -74,35 +114,18 @@ cglobal x264_cpu_cpuid_test
     popfd
     ret
 
-;-----------------------------------------------------------------------------
-; int x264_cpu_cpuid( int op, int *eax, int *ebx, int *ecx, int *edx )
-;-----------------------------------------------------------------------------
-cglobal x264_cpu_cpuid, 0,6
-    mov     eax,    r0m
-    cpuid
-    mov     esi,    r1m
-    mov     [esi],  eax
-    mov     esi,    r2m
-    mov     [esi],  ebx
-    mov     esi,    r3m
-    mov     [esi],  ecx
-    mov     esi,    r4m
-    mov     [esi],  edx
-    RET
-
-;-----------------------------------------------------------------------------
-; void x264_stack_align( void (*func)(void*), void *arg );
-;-----------------------------------------------------------------------------
-cglobal x264_stack_align
+cglobal stack_align
     push ebp
     mov  ebp, esp
-    sub  esp, 8
-    and  esp, ~15
+    sub  esp, 12
+    and  esp, ~31
     mov  ecx, [ebp+8]
     mov  edx, [ebp+12]
     mov  [esp], edx
     mov  edx, [ebp+16]
     mov  [esp+4], edx
+    mov  edx, [ebp+20]
+    mov  [esp+8], edx
     call ecx
     leave
     ret
@@ -110,19 +133,65 @@ cglobal x264_stack_align
 %endif
 
 ;-----------------------------------------------------------------------------
-; void x264_emms( void )
+; void cpu_emms( void )
 ;-----------------------------------------------------------------------------
-cglobal x264_emms
+cglobal cpu_emms
     emms
     ret
 
 ;-----------------------------------------------------------------------------
-; void x264_cpu_mask_misalign_sse(void)
+; void cpu_sfence( void )
 ;-----------------------------------------------------------------------------
-cglobal x264_cpu_mask_misalign_sse
-    sub   rsp, 4
-    stmxcsr [rsp]
-    or dword [rsp], 1<<17
-    ldmxcsr [rsp]
-    add   rsp, 4
+cglobal cpu_sfence
+    sfence
+    ret
+
+cextern intel_cpu_indicator_init
+
+;-----------------------------------------------------------------------------
+; void safe_intel_cpu_indicator_init( void );
+;-----------------------------------------------------------------------------
+cglobal safe_intel_cpu_indicator_init
+    push r0
+    push r1
+    push r2
+    push r3
+    push r4
+    push r5
+    push r6
+%if ARCH_X86_64
+    push r7
+    push r8
+    push r9
+    push r10
+    push r11
+    push r12
+    push r13
+    push r14
+%endif
+    push rbp
+    mov  rbp, rsp
+%if WIN64
+    sub  rsp, 32 ; shadow space
+%endif
+    and  rsp, ~31
+    call intel_cpu_indicator_init
+    leave
+%if ARCH_X86_64
+    pop r14
+    pop r13
+    pop r12
+    pop r11
+    pop r10
+    pop r9
+    pop r8
+    pop r7
+%endif
+    pop r6
+    pop r5
+    pop r4
+    pop r3
+    pop r2
+    pop r1
+    pop r0
     ret

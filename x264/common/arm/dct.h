@@ -1,7 +1,7 @@
 /*****************************************************************************
- * dct.h: h264 encoder library
+ * dct.h: arm transform and zigzag
  *****************************************************************************
- * Copyright (C) 2009 x264 project
+ * Copyright (C) 2009-2014 x264 project
  *
  * Authors: David Conrad <lessen42@gmail.com>
  *
@@ -18,32 +18,35 @@
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02111, USA.
+ *
+ * This program is also available under a commercial proprietary license.
+ * For more information, contact us at licensing@x264.com.
  *****************************************************************************/
 
 #ifndef X264_ARM_DCT_H
 #define X264_ARM_DCT_H
 
-void x264_dct4x4dc_neon( int16_t d[4][4] );
-void x264_idct4x4dc_neon( int16_t d[4][4] );
+void x264_dct4x4dc_neon( int16_t d[16] );
+void x264_idct4x4dc_neon( int16_t d[16] );
 
-void x264_sub4x4_dct_neon( int16_t dct[4][4], uint8_t *pix1, uint8_t *pix2 );
-void x264_sub8x8_dct_neon( int16_t dct[4][4][4], uint8_t *pix1, uint8_t *pix2 );
-void x264_sub16x16_dct_neon( int16_t dct[16][4][4], uint8_t *pix1, uint8_t *pix2 );
+void x264_sub4x4_dct_neon( int16_t dct[16], uint8_t *pix1, uint8_t *pix2 );
+void x264_sub8x8_dct_neon( int16_t dct[4][16], uint8_t *pix1, uint8_t *pix2 );
+void x264_sub16x16_dct_neon( int16_t dct[16][16], uint8_t *pix1, uint8_t *pix2 );
 
-void x264_add4x4_idct_neon( uint8_t *p_dst, int16_t dct[4][4] );
-void x264_add8x8_idct_neon( uint8_t *p_dst, int16_t dct[4][4][4] );
-void x264_add16x16_idct_neon( uint8_t *p_dst, int16_t dct[16][4][4] );
+void x264_add4x4_idct_neon( uint8_t *p_dst, int16_t dct[16] );
+void x264_add8x8_idct_neon( uint8_t *p_dst, int16_t dct[4][16] );
+void x264_add16x16_idct_neon( uint8_t *p_dst, int16_t dct[16][16] );
 
-void x264_add8x8_idct_dc_neon( uint8_t *p_dst, int16_t dct[2][2] );
-void x264_add16x16_idct_dc_neon( uint8_t *p_dst, int16_t dct[4][4] );
-void x264_sub8x8_dct_dc_neon( int16_t dct[2][2], uint8_t *pix1, uint8_t *pix2 );
+void x264_add8x8_idct_dc_neon( uint8_t *p_dst, int16_t dct[4] );
+void x264_add16x16_idct_dc_neon( uint8_t *p_dst, int16_t dct[16] );
+void x264_sub8x8_dct_dc_neon( int16_t dct[4], uint8_t *pix1, uint8_t *pix2 );
 
-void x264_sub8x8_dct8_neon( int16_t dct[8][8], uint8_t *pix1, uint8_t *pix2 );
-void x264_sub16x16_dct8_neon( int16_t dct[4][8][8], uint8_t *pix1, uint8_t *pix2 );
+void x264_sub8x8_dct8_neon( int16_t dct[64], uint8_t *pix1, uint8_t *pix2 );
+void x264_sub16x16_dct8_neon( int16_t dct[4][64], uint8_t *pix1, uint8_t *pix2 );
 
-void x264_add8x8_idct8_neon( uint8_t *p_dst, int16_t dct[8][8] );
-void x264_add16x16_idct8_neon( uint8_t *p_dst, int16_t dct[4][8][8] );
+void x264_add8x8_idct8_neon( uint8_t *p_dst, int16_t dct[64] );
+void x264_add16x16_idct8_neon( uint8_t *p_dst, int16_t dct[4][64] );
 
-void x264_zigzag_scan_4x4_frame_neon( int16_t level[16], int16_t dct[4][4] );
+void x264_zigzag_scan_4x4_frame_neon( int16_t level[16], int16_t dct[16] );
 
 #endif

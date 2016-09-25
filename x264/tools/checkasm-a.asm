@@ -1,7 +1,10 @@
 ;*****************************************************************************
-;* checkasm-a.asm
+;* checkasm-a.asm: assembly check tool
 ;*****************************************************************************
-;* Copyright (C) 2008 Loren Merritt <lorenm@u.washington.edu>
+;* Copyright (C) 2008-2014 x264 project
+;*
+;* Authors: Loren Merritt <lorenm@u.washington.edu>
+;*          Henrik Gramner <henrik@gramner.com>
 ;*
 ;* This program is free software; you can redistribute it and/or modify
 ;* it under the terms of the GNU General Public License as published by
@@ -16,6 +19,9 @@
 ;* You should have received a copy of the GNU General Public License
 ;* along with this program; if not, write to the Free Software
 ;* Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02111, USA.
+;*
+;* This program is also available under a commercial proprietary license.
+;* For more information, contact us at licensing@x264.com.
 ;*****************************************************************************
 
 %include "x86inc.asm"
@@ -24,11 +30,9 @@ SECTION_RODATA
 
 error_message: db "failed to preserve register", 0
 
-%ifdef WIN64
+%if ARCH_X86_64
 ; just random numbers to reduce the chance of incidental match
 ALIGN 16
-n4:   dq 0xa77809bf11b239d1
-n5:   dq 0x2ba9bf3d2f05b389
 x6:  ddq 0x79445c159ce790641a1b2550a612b48c
 x7:  ddq 0x86b2536fcd8cf6362eed899d5a28ddcd
 x8:  ddq 0x3f2bf84fc0fcca4eb0856806085e7943
@@ -39,70 +43,123 @@ x12: ddq 0x24b3c1d2a024048bc45ea11a955d8dd5
 x13: ddq 0xdd7b8919edd427862e8ec680de14b47c
 x14: ddq 0x11e53e2b2ac655ef135ce6888fa02cbf
 x15: ddq 0x6de8f4c914c334d5011ff554472a7a10
+n7:   dq 0x21f86d66c8ca00ce
+n8:   dq 0x75b6ba21077c48ad
+n9:   dq 0xed56bb2dcb3c7736
+n10:  dq 0x8bda43d3fd1a7e06
+n11:  dq 0xb64a9c9e5d318408
+n12:  dq 0xdf9a54b303f1d3a3
+n13:  dq 0x4a75479abd64e097
+n14:  dq 0x249214109d5d1c88
 %endif
 
 SECTION .text
 
-cextern puts
+cextern_naked puts
 
 ; max number of args used by any x264 asm function.
 ; (max_args % 4) must equal 3 for stack alignment
-%define max_args 11
+%define max_args 15
 
-%ifdef WIN64
+%if ARCH_X86_64
+
+;-----------------------------------------------------------------------------
+; void x264_checkasm_stack_clobber( uint64_t clobber, ... )
+;-----------------------------------------------------------------------------
+cglobal checkasm_stack_clobber, 1,2
+    ; Clobber the stack with junk below the stack pointer
+    %define size (max_args+6)*8
+    SUB  rsp, size
+    mov   r1, size-8
+.loop:
+    mov [rsp+r1], r0
+    sub   r1, 8
+    jge .loop
+    ADD  rsp, size
+    RET
+
+%if WIN64
+    %assign free_regs 7
+%else
+    %assign free_regs 9
+%endif
 
 ;-----------------------------------------------------------------------------
 ; intptr_t x264_checkasm_call( intptr_t (*func)(), int *ok, ... )
 ;-----------------------------------------------------------------------------
-cglobal x264_checkasm_call, 4,7,16
-    sub  rsp, max_args*8
-    %assign stack_offset stack_offset+max_args*8
+INIT_XMM
+cglobal checkasm_call, 2,15,16,max_args*8+8
     mov  r6, r0
-    mov  [rsp+stack_offset+16], r1
-    mov  r0, r2
-    mov  r1, r3
-    mov r2d, r4m ; FIXME truncates pointer
-    mov r3d, r5m ; FIXME truncates pointer
-%assign i 4
-%rep max_args-4
-    mov  r4, [rsp+stack_offset+8+(i+2)*8]
-    mov  [rsp+i*8], r4
-    %assign i i+1
+    mov  [rsp+max_args*8], r1
+
+    ; All arguments have been pushed on the stack instead of registers in order to
+    ; test for incorrect assumptions that 32-bit ints are zero-extended to 64-bit.
+    mov  r0, r6mp
+    mov  r1, r7mp
+    mov  r2, r8mp
+    mov  r3, r9mp
+%if UNIX64
+    mov  r4, r10mp
+    mov  r5, r11mp
+    %assign i 6
+    %rep max_args-6
+        mov  r9, [rsp+stack_offset+(i+1)*8]
+        mov  [rsp+(i-6)*8], r9
+        %assign i i+1
+    %endrep
+%else
+    %assign i 4
+    %rep max_args-4
+        mov  r9, [rsp+stack_offset+(i+7)*8]
+        mov  [rsp+i*8], r9
+        %assign i i+1
+    %endrep
+%endif
+
+%if WIN64
+    %assign i 6
+    %rep 16-6
+        mova m %+ i, [x %+ i]
+        %assign i i+1
+    %endrep
+%endif
+
+%assign i 14
+%rep 15-free_regs
+    mov  r %+ i, [n %+ i]
+    %assign i i-1
 %endrep
-%assign i 6
-%rep 16-6
-    movdqa xmm %+ i, [x %+ i GLOBAL]
-    %assign i i+1
-%endrep
-    mov  r4, [n4 GLOBAL]
-    mov  r5, [n5 GLOBAL]
     call r6
-    xor  r4, [n4 GLOBAL]
-    xor  r5, [n5 GLOBAL]
-    or   r4, r5
-    pxor xmm5, xmm5
-%assign i 6
-%rep 16-6
-    pxor xmm %+ i, [x %+ i GLOBAL]
-    por  xmm5, xmm %+ i
-    %assign i i+1
+%assign i 14
+%rep 15-free_regs
+    xor  r %+ i, [n %+ i]
+    or  r14, r %+ i
+    %assign i i-1
 %endrep
-    packsswb xmm5, xmm5
-    movq r5, xmm5
-    or   r4, r5
+
+%if WIN64
+    %assign i 6
+    %rep 16-6
+        pxor m %+ i, [x %+ i]
+        por  m6, m %+ i
+        %assign i i+1
+    %endrep
+    packsswb m6, m6
+    movq r5, m6
+    or  r14, r5
+%endif
+
     jz .ok
-    mov  r4, rax
-    lea  r0, [error_message GLOBAL]
+    mov  r9, rax
+    lea  r0, [error_message]
     call puts
-    mov  r1, [rsp+stack_offset+16]
+    mov  r1, [rsp+max_args*8]
     mov  dword [r1], 0
-    mov  rax, r4
+    mov  rax, r9
 .ok:
-    add  rsp, max_args*8
-    %assign stack_offset stack_offset-max_args*8
     RET
 
-%elifndef ARCH_X86_64
+%else
 
 ; just random numbers to reduce the chance of incidental match
 %define n3 dword 0x6549315c
@@ -113,7 +170,7 @@ cglobal x264_checkasm_call, 4,7,16
 ;-----------------------------------------------------------------------------
 ; intptr_t x264_checkasm_call( intptr_t (*func)(), int *ok, ... )
 ;-----------------------------------------------------------------------------
-cglobal x264_checkasm_call, 1,7
+cglobal checkasm_call, 1,7
     mov  r3, n3
     mov  r4, n4
     mov  r5, n5
@@ -132,7 +189,7 @@ cglobal x264_checkasm_call, 1,7
     or   r3, r5
     jz .ok
     mov  r3, eax
-    lea  r1, [error_message GLOBAL]
+    lea  r1, [error_message]
     push r1
     call puts
     add  esp, 4
@@ -140,16 +197,20 @@ cglobal x264_checkasm_call, 1,7
     mov  dword [r1], 0
     mov  eax, r3
 .ok:
-    RET
+    REP_RET
 
 %endif ; ARCH_X86_64
 
 ;-----------------------------------------------------------------------------
 ; int x264_stack_pagealign( int (*func)(), int align )
 ;-----------------------------------------------------------------------------
-cglobal x264_stack_pagealign, 2,2
+cglobal stack_pagealign, 2,2
+    movsxdifnidn r1, r1d
     push rbp
     mov  rbp, rsp
+%if WIN64
+    sub  rsp, 32 ; shadow space
+%endif
     and  rsp, ~0xfff
     sub  rsp, r1
     call r0

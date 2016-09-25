@@ -1,53 +1,101 @@
-/*
- * Copyright (c) 2008 Mans Rullgard <mans@mansr.com>
+/*****************************************************************************
+ * asm.S: arm utility macros
+ *****************************************************************************
+ * Copyright (C) 2008-2014 x264 project
  *
- * This file is part of FFmpeg.
+ * Authors: Mans Rullgard <mans@mansr.com>
+ *          David Conrad <lessen42@gmail.com>
  *
- * FFmpeg is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2.1 of the License, or (at your option) any later version.
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
  *
- * FFmpeg is distributed in the hope that it will be useful,
+ * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with FFmpeg; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
- */
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02111, USA.
+ *
+ * This program is also available under a commercial proprietary license.
+ * For more information, contact us at licensing@x264.com.
+ *****************************************************************************/
 
 #include "config.h"
 
-        .macro require8, val=1
-        .eabi_attribute 24, \val
-        .endm
+.syntax unified
 
-        .macro preserve8, val=1
-        .eabi_attribute 25, \val
-        .endm
+#if   HAVE_NEON
+        .arch           armv7-a
+#elif HAVE_ARMV6T2
+        .arch           armv6t2
+#elif HAVE_ARMV6
+        .arch           armv6
+#endif
 
-        .macro function name, export=0
-.if \export
-        .global \name
-.endif
-        .type   \name, %function
-        .func   \name
+.fpu neon
+
+#ifdef PREFIX
+#   define EXTERN_ASM _
+#else
+#   define EXTERN_ASM
+#endif
+
+#ifdef __ELF__
+#   define ELF
+#else
+#   define ELF @
+#endif
+
+#if HAVE_AS_FUNC
+#   define FUNC
+#else
+#   define FUNC @
+#endif
+
+.macro require8, val=1
+ELF     .eabi_attribute 24, \val
+.endm
+
+.macro preserve8, val=1
+ELF     .eabi_attribute 25, \val
+.endm
+
+.macro function name, export=1
+    .macro endfunc
+ELF     .size   \name, . - \name
+FUNC    .endfunc
+        .purgem endfunc
+    .endm
+        .align  2
+.if \export == 1
+        .global EXTERN_ASM\name
+ELF     .hidden EXTERN_ASM\name
+ELF     .type   EXTERN_ASM\name, %function
+FUNC    .func   EXTERN_ASM\name
+EXTERN_ASM\name:
+.else
+ELF     .hidden \name
+ELF     .type   \name, %function
+FUNC    .func   \name
 \name:
-        .endm
+.endif
+.endm
 
-        .macro movrel rd, val
-#if defined(HAVE_ARMV6T2) && !defined(PIC)
+.macro movrel rd, val
+#if HAVE_ARMV6T2 && !defined(PIC)
         movw            \rd, #:lower16:\val
         movt            \rd, #:upper16:\val
 #else
         ldr             \rd, =\val
 #endif
-        .endm
+.endm
 
 .macro movconst rd, val
-#ifdef HAVE_ARMV6T2
+#if HAVE_ARMV6T2
     movw        \rd, #:lower16:\val
 .if \val >> 16
     movt        \rd, #:upper16:\val
@@ -56,6 +104,10 @@
     ldr         \rd, =\val
 #endif
 .endm
+
+#define GLUE(a, b) a ## b
+#define JOIN(a, b) GLUE(a, b)
+#define X(s) JOIN(EXTERN_ASM, s)
 
 #define FENC_STRIDE 16
 #define FDEC_STRIDE 32
