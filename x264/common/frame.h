@@ -1,7 +1,7 @@
 /*****************************************************************************
  * frame.h: frame handling
  *****************************************************************************
- * Copyright (C) 2003-2015 x264 project
+ * Copyright (C) 2003-2016 x264 project
  *
  * Authors: Laurent Aimar <fenrir@via.ecp.fr>
  *          Loren Merritt <lorenm@u.washington.edu>
@@ -39,6 +39,7 @@ typedef struct x264_frame
     int     i_poc;
     int     i_delta_poc[2];
     int     i_type;
+    int     i_forced_type;
     int     i_qpplus1;
     int64_t i_pts;
     int64_t i_dts;

@@ -1,7 +1,7 @@
 /*****************************************************************************
  * predict.c: aarch64 intra prediction
  *****************************************************************************
- * Copyright (C) 2009-2015 x264 project
+ * Copyright (C) 2009-2016 x264 project
  *
  * Authors: David Conrad <lessen42@gmail.com>
  *          Janne Grunau <janne-x264@jannau.net>
@@ -72,15 +72,18 @@ void x264_predict_4x4_init_aarch64( int cpu, x264_predict_t pf[12] )
 
 void x264_predict_8x8c_init_aarch64( int cpu, x264_predict_t pf[7] )
 {
+#if !HIGH_BIT_DEPTH
+    if (cpu&X264_CPU_ARMV8) {
+        pf[I_PRED_CHROMA_V]   = x264_predict_8x8c_v_aarch64;
+    }
+
     if (!(cpu&X264_CPU_NEON))
         return;
 
-#if !HIGH_BIT_DEPTH
     pf[I_PRED_CHROMA_DC]      = x264_predict_8x8c_dc_neon;
     pf[I_PRED_CHROMA_DC_TOP]  = x264_predict_8x8c_dc_top_neon;
     pf[I_PRED_CHROMA_DC_LEFT] = x264_predict_8x8c_dc_left_neon;
     pf[I_PRED_CHROMA_H]       = x264_predict_8x8c_h_neon;
-    pf[I_PRED_CHROMA_V]       = x264_predict_8x8c_v_neon;
     pf[I_PRED_CHROMA_P]       = x264_predict_8x8c_p_neon;
 #endif // !HIGH_BIT_DEPTH
 }

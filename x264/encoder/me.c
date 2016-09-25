@@ -1,7 +1,7 @@
 /*****************************************************************************
  * me.c: motion estimation
  *****************************************************************************
- * Copyright (C) 2003-2015 x264 project
+ * Copyright (C) 2003-2016 x264 project
  *
  * Authors: Loren Merritt <lorenm@u.washington.edu>
  *          Laurent Aimar <fenrir@via.ecp.fr>
@@ -707,10 +707,11 @@ void x264_me_search_ref( x264_t *h, x264_me_t *m, int16_t (*mvc)[2], int i_mvc, 
                 sad_thresh = bsad*sad_thresh>>3;
                 while( nmvsad > limit*2 && sad_thresh > bsad )
                 {
-                    int i;
+                    int i = 0;
                     // halve the range if the domain is too large... eh, close enough
                     sad_thresh = (sad_thresh + bsad) >> 1;
-                    for( i = 0; i < nmvsad && mvsads[i].sad <= sad_thresh; i++ );
+                    while( i < nmvsad && mvsads[i].sad <= sad_thresh )
+                        i++;
                     for( int j = i; j < nmvsad; j++ )
                     {
                         uint32_t sad;

@@ -1,7 +1,7 @@
 /*****************************************************************************
  * x264: top-level x264cli functions
  *****************************************************************************
- * Copyright (C) 2003-2015 x264 project
+ * Copyright (C) 2003-2016 x264 project
  *
  * Authors: Loren Merritt <lorenm@u.washington.edu>
  *          Laurent Aimar <fenrir@via.ecp.fr>
@@ -38,7 +38,6 @@
 #endif
 
 #include <signal.h>
-#define _GNU_SOURCE
 #include <getopt.h>
 #include "common/common.h"
 #include "x264cli.h"
@@ -442,7 +441,7 @@ static void print_csp_names( int longhelp )
     printf( "                              - valid csps for `lavf' demuxer:\n" );
     printf( INDENT );
     size_t line_len = strlen( INDENT );
-    for( enum PixelFormat i = AV_PIX_FMT_NONE+1; i < AV_PIX_FMT_NB; i++ )
+    for( enum AVPixelFormat i = AV_PIX_FMT_NONE+1; i < AV_PIX_FMT_NB; i++ )
     {
         const char *pfname = av_get_pix_fmt_name( i );
         if( pfname )
@@ -846,17 +845,19 @@ static void help( x264_param_t *defaults, int longhelp )
         "                                  - %s\n", range_names[0], stringify_names( buf, range_names ) );
     H2( "      --colorprim <string>    Specify color primaries [\"%s\"]\n"
         "                                  - undef, bt709, bt470m, bt470bg, smpte170m,\n"
-        "                                    smpte240m, film, bt2020\n",
+        "                                    smpte240m, film, bt2020, smpte428,\n"
+        "                                    smpte431, smpte432\n",
                                        strtable_lookup( x264_colorprim_names, defaults->vui.i_colorprim ) );
     H2( "      --transfer <string>     Specify transfer characteristics [\"%s\"]\n"
         "                                  - undef, bt709, bt470m, bt470bg, smpte170m,\n"
         "                                    smpte240m, linear, log100, log316,\n"
         "                                    iec61966-2-4, bt1361e, iec61966-2-1,\n"
-        "                                    bt2020-10, bt2020-12\n",
+        "                                    bt2020-10, bt2020-12, smpte2084, smpte428\n",
                                        strtable_lookup( x264_transfer_names, defaults->vui.i_transfer ) );
     H2( "      --colormatrix <string>  Specify color matrix setting [\"%s\"]\n"
         "                                  - undef, bt709, fcc, bt470bg, smpte170m,\n"
-        "                                    smpte240m, GBR, YCgCo, bt2020nc, bt2020c\n",
+        "                                    smpte240m, GBR, YCgCo, bt2020nc, bt2020c,\n"
+        "                                    smpte2085\n",
                                        strtable_lookup( x264_colmatrix_names, defaults->vui.i_colmatrix ) );
     H2( "      --chromaloc <integer>   Specify chroma sample location (0 to 5) [%d]\n",
                                        defaults->vui.i_chroma_loc );
@@ -1741,19 +1742,23 @@ generic_option:
 
 static void parse_qpfile( cli_opt_t *opt, x264_picture_t *pic, int i_frame )
 {
-    int num = -1, qp, ret;
+    int num = -1;
     char type;
-    uint64_t file_pos;
     while( num < i_frame )
     {
-        file_pos = ftell( opt->qpfile );
-        qp = -1;
-        ret = fscanf( opt->qpfile, "%d %c%*[ \t]%d\n", &num, &type, &qp );
+        int64_t file_pos = ftell( opt->qpfile );
+        int qp = -1;
+        int ret = fscanf( opt->qpfile, "%d %c%*[ \t]%d\n", &num, &type, &qp );
         pic->i_type = X264_TYPE_AUTO;
         pic->i_qpplus1 = X264_QP_AUTO;
         if( num > i_frame || ret == EOF )
         {
-            fseek( opt->qpfile, file_pos, SEEK_SET );
+            if( file_pos < 0 || fseek( opt->qpfile, file_pos, SEEK_SET ) )
+            {
+                x264_cli_log( "x264", X264_LOG_ERROR, "qpfile seeking failed\n" );
+                fclose( opt->qpfile );
+                opt->qpfile = NULL;
+            }
             break;
         }
         if( num < i_frame && ret >= 2 )
