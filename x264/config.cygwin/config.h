@@ -30,3 +30,4 @@
 #define HAVE_THP 0
 #define HAVE_LSMASH 0
 #define HAVE_AS_FUNC 0
+#define HAVE_INTEL_DISPATCHER 0

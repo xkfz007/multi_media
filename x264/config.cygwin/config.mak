@@ -4,7 +4,7 @@ exec_prefix=${prefix}
 bindir=${exec_prefix}/bin
 libdir=${exec_prefix}/lib
 includedir=${prefix}/include
-ARCH=X86
+SYS_ARCH=X86
 SYS=CYGWIN
 CC=gcc
 CFLAGS=-Wno-maybe-uninitialized -Wshadow -O1 -g -m32  -Wall -I. -I$(SRCPATH) -march=i686 -mfpmath=sse -msse -std=gnu99 -mpreferred-stack-boundary=5 -fno-tree-vectorize
