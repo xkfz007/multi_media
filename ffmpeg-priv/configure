@@ -1935,6 +1935,7 @@ SYSTEM_FUNCS="
     sched_getaffinity
     SetConsoleTextAttribute
     SetConsoleCtrlHandler
+    SetDllDirectory
     setmode
     setrlimit
     Sleep
@@ -5475,6 +5476,7 @@ check_func_headers windows.h MapViewOfFile
 check_func_headers windows.h PeekNamedPipe
 check_func_headers windows.h SetConsoleTextAttribute
 check_func_headers windows.h SetConsoleCtrlHandler
+check_func_headers windows.h SetDllDirectory
 check_func_headers windows.h Sleep
 check_func_headers windows.h VirtualAlloc
 check_struct windows.h "CONDITION_VARIABLE" Ptr
@@ -6125,11 +6127,7 @@ elif enabled ccc; then
     add_cflags -msg_disable nonstandcast
     add_cflags -msg_disable unsupieee
 elif enabled gcc; then
-    case $gcc_basever in
-        4.9*) enabled x86 || check_optflags -fno-tree-vectorize ;;
-        4.*)                 check_optflags -fno-tree-vectorize ;;
-        *)    enabled x86 || check_optflags -fno-tree-vectorize ;;
-    esac
+    check_optflags -fno-tree-vectorize
     check_cflags -Werror=format-security
     check_cflags -Werror=implicit-function-declaration
     check_cflags -Werror=missing-prototypes

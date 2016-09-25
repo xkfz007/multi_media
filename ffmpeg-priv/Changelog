@@ -2,6 +2,62 @@ Entries are sorted chronologically from oldest to youngest within each release,
 releases are sorted from youngest to oldest.
 
 version <next>:
+version 3.1.3.S1:
+* add glob to support globbing
+
+version 3.1.3:
+- examples/demuxing_decoding: convert to codecpar
+- avcodec/exr: Check tile positions
+- avcodec/aacenc: Tighter input checks
+- avformat/wtvdec: Check pointer before use
+- libavcodec/wmalosslessdec: Check the remaining bits
+- avcodec/adpcm: Fix adpcm_ima_wav padding
+- avcodec/svq3: fix slice size check
+- avcodec/diracdec: Check numx/y
+- avcodec/h2645_parse: fix nal size
+- avcodec/h2645_parse: Use get_nalsize() in ff_h2645_packet_split()
+- h2645_parse: only read avc length code at the correct position
+- h2645_parse: don't overread AnnexB NALs within an avc stream
+- avcodec/h264_parser: Factor get_avc_nalsize() out
+- avcodec/cfhd: Increase minimum band dimension to 3
+- avcodec/indeo2: check ctab
+- avformat/swfdec: Fix inflate() error code check
+- avcodec/rawdec: Fix bits_per_coded_sample checks
+- vcodec/h2645_parse: Clear buffer padding
+- avcodec/h2645: Fix NAL unit padding
+- avfilter/drawutils: Fix single plane with alpha
+- cmdutils: check for SetDllDirectory() availability
+
+version 3.1.2:
+- cmdutils: remove the current working directory from the DLL search path on win32
+- avcodec/rawdec: Fix palette handling with changing palettes
+- avcodec/raw: Fix decoding of ilacetest.mov
+- avformat/mov: Enable mp3 parsing if a packet needs it
+- avformat/hls: Use an array instead of stream offset for stream mapping
+- avformat/hls: Sync starting segment across variants on live streams
+- avformat/hls: Fix regression with ranged media segments
+- avcodec/ffv1enc: Fix assertion failure with non zero bits per sample
+- avfilter/af_hdcd: small fix in af_hdcd.c where gain was not being adjusted for "attenuate slowly"
+- avformat/oggdec: Fix integer overflow with invalid pts
+- ffplay: Fix invalid array index
+- avcodec/alacenc: allocate bigger packets (cherry picked from commit 82b84c71b009884c8d041361027718b19922c76d)
+- libavcodec/dnxhd: Enable 12-bit DNxHR support.
+- lavc/vaapi_encode_h26x: Fix a crash if "." is not the decimal separator.
+- jni: Return ENOSYS on unsupported platforms
+- lavu/hwcontext_vaapi: Fix compilation if VA_FOURCC_ABGR is not defined.
+- avcodec/vp9_parser: Check the input frame sizes for being consistent
+- avformat/flvdec: parse keyframe before a\v stream was created add_keyframes_index() when stream created or keyframe parsed
+- avformat/flvdec: splitting add_keyframes_index() out from parse_keyframes_index()
+- libavformat/rtpdec_asf: zero initialize the AVIOContext struct
+- libavutil/opt: Small bugfix in example.
+- libx264: Increase x264 opts character limit to 4096
+- avcodec/h264_parser: Set sps/pps_ref
+- librtmp: Avoid an infiniloop setting connection arguments
+- avformat/oggparsevp8: fix pts calculation on pages ending with an invisible frame
+- lavc/Makefile: Fix standalone compilation of the svq3 decoder.
+- lavf/vplayerdec: Improve auto-detection.
+- lavc/mediacodecdec_h264: properly convert extradata to annex-b
+- Revert "configure: Enable GCC vectorization on ≥4.9 on x86"
 
 version 3.1.1.S1:
 * add option 'digit_only' for video file testsrc
