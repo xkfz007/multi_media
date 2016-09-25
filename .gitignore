@@ -31,3 +31,11 @@
 # Debug files
 *.dSYM/
 *.su
+
+# Microsoft visual studio project files
+*.suo
+*.ncb
+*.user
+Debug/
+Release/
+x64/
