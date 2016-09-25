@@ -2,5 +2,5 @@
 #define X264_GPL           1
 #define X264_INTERLACED    1
 #define X264_CHROMA_FORMAT 0
-#define X264_VERSION "x264-snapshot-20150223-2245-stable"
-#define X264_POINTVER "0.144.x"
+#define X264_VERSION "x264-snapshot-20150730-2245-stable"
+#define X264_POINTVER "0.146.x"
