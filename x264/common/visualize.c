@@ -1,9 +1,7 @@
 /*****************************************************************************
  * x264: h264 encoder
  *****************************************************************************
- * Copyright (C) 2005 x264 project
- *
- * Author: Tuukka Toivonen <tuukkat@ee.oulu.fi>
+ * Copyright (C) 2005 Tuukka Toivonen <tuukkat@ee.oulu.fi>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,7 +15,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02111, USA.
  *****************************************************************************/
 
 /*
@@ -38,14 +36,6 @@
  * DC predicted blocks have both horizontal and vertical lines,
  * pink blocks with a diagonal line are predicted using the planar function.
  */
-
-#ifdef HAVE_STDINT_H
-#include <stdint.h>
-#else
-#include <inttypes.h>
-#endif
-#include <stddef.h>                 /* NULL */
-#include <stdio.h>                  /* getchar */
 
 #include "common.h"
 #include "visualize.h"
@@ -104,10 +94,13 @@ static void mv(int x0, int y0, int16_t dmv[2], int ref, int zoom, char *col)
 /* }}} */
 
 /* {{{ [fold] void x264_visualize_init( x264_t *h ) */
-void x264_visualize_init( x264_t *h )
+int x264_visualize_init( x264_t *h )
 {
     int mb = h->sps->i_mb_width * h->sps->i_mb_height;
-    h->visualize = x264_malloc(mb * sizeof(visualize_t));
+    CHECKED_MALLOC( h->visualize, mb * sizeof(visualize_t) );
+    return 0;
+fail:
+    return -1;
 }
 /* }}} */
 /* {{{ [fold] void x264_visualize_mb( x264_t *h ) */

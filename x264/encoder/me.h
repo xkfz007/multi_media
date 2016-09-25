@@ -1,10 +1,10 @@
 /*****************************************************************************
  * me.h: h264 encoder library (Motion Estimation)
  *****************************************************************************
- * Copyright (C) 2003 Laurent Aimar
- * $Id: me.h,v 1.1 2004/06/03 19:27:08 fenrir Exp $
+ * Copyright (C) 2003-2008 x264 project
  *
- * Authors: Laurent Aimar <fenrir@via.ecp.fr>
+ * Authors: Loren Merritt <lorenm@u.washington.edu>
+ *          Laurent Aimar <fenrir@via.ecp.fr>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,19 +18,20 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02111, USA.
  *****************************************************************************/
 
-#ifndef _ME_H
-#define _ME_H 1
+#ifndef X264_ME_H
+#define X264_ME_H
 
 #define COST_MAX (1<<28)
+#define COST_MAX64 (1ULL<<60)
 
 typedef struct
 {
     /* input */
     int      i_pixel;   /* PIXEL_WxH */
-    int16_t *p_cost_mv; /* lambda * nbits for each possible mv */
+    uint16_t *p_cost_mv; /* lambda * nbits for each possible mv */
     int      i_ref_cost;
     int      i_ref;
 
@@ -39,22 +40,30 @@ typedef struct
     uint16_t *integral;
     int      i_stride[2];
 
-    int mvp[2];
+    ALIGNED_4( int16_t mvp[2] );
 
     /* output */
     int cost_mv;        /* lambda * nbits for the chosen mv */
     int cost;           /* satd + lambda * nbits */
-    int mv[2];
-} x264_me_t;
+    ALIGNED_4( int16_t mv[2] );
+} ALIGNED_16( x264_me_t );
 
-void x264_me_search_ref( x264_t *h, x264_me_t *m, int (*mvc)[2], int i_mvc, int *p_fullpel_thresh );
-static inline void x264_me_search( x264_t *h, x264_me_t *m, int (*mvc)[2], int i_mvc )
+typedef struct {
+    int sad;
+    int16_t mx, my;
+} mvsad_t;
+
+void x264_me_search_ref( x264_t *h, x264_me_t *m, int16_t (*mvc)[2], int i_mvc, int *p_fullpel_thresh );
+static inline void x264_me_search( x264_t *h, x264_me_t *m, int16_t (*mvc)[2], int i_mvc )
     { x264_me_search_ref( h, m, mvc, i_mvc, NULL ); }
 
 void x264_me_refine_qpel( x264_t *h, x264_me_t *m );
-void x264_me_refine_qpel_rd( x264_t *h, x264_me_t *m, int i_lambda2, int i8 );
-int x264_me_refine_bidir( x264_t *h, x264_me_t *m0, x264_me_t *m1, int i_weight );
-int x264_rd_cost_part( x264_t *h, int i_lambda2, int i8, int i_pixel );
+void x264_me_refine_qpel_rd( x264_t *h, x264_me_t *m, int i_lambda2, int i4, int i_list );
+void x264_me_refine_bidir_rd( x264_t *h, x264_me_t *m0, x264_me_t *m1, int i_weight, int i8, int i_lambda2 );
+void x264_me_refine_bidir_satd( x264_t *h, x264_me_t *m0, x264_me_t *m1, int i_weight );
+uint64_t x264_rd_cost_part( x264_t *h, int i_lambda2, int i8, int i_pixel );
+
+extern uint16_t *x264_cost_mv_fpel[92][4];
 
 #define COPY1_IF_LT(x,y)\
 if((y)<(x))\
@@ -73,6 +82,22 @@ if((y)<(x))\
     (x)=(y);\
     (a)=(b);\
     (c)=(d);\
+}
+
+#define COPY4_IF_LT(x,y,a,b,c,d,f,e)\
+if((y)<(x))\
+{\
+    (x)=(y);\
+    (a)=(b);\
+    (c)=(d);\
+    (f)=(e);\
+}
+
+#define COPY2_IF_GT(x,y,a,b)\
+if((y)>(x))\
+{\
+    (x)=(y);\
+    (a)=(b);\
 }
 
 #endif
