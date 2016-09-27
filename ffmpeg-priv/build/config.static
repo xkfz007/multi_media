@@ -1,19 +1,22 @@
 #!/bin/bash
-build="RELEASE"
+conf="RELEASE"
 if [ $# -ge 1 ];then
-    build=$(echo $1|tr '[a-z]' '[A-Z]')
+    conf=$(echo $1|tr '[a-z]' '[A-Z]')
 fi
 current_dir=`pwd`
-build_dir="${current_dir}"
+build_dir="${current_dir}/builds"
 if [ ! -e $build_dir ];then
     mkdir $build_dir
 fi
-root_dir=`realpath "${current_dir}/../"`
+#root_dir=`realpath "${current_dir}/../"`
+root_dir=`cd "${current_dir}/../";pwd`
+echo "root_dir="$root_dir
 
 
 export PKG_CONFIG_PATH="$PKG_GONFIG_PATH:${root_dir}/lib/pkgconfig"
-echo $PKG_CONFIG_PATH
+echo "PKG_PATH="$PKG_CONFIG_PATH
 
+cd ${build_dir}
 cmd="${root_dir}/configure  \
     --prefix=$build_dir \
     --disable-doc       \
@@ -37,7 +40,7 @@ cmd="${root_dir}/configure  \
     --extra-ldflags=\"-L${root_dir}/lib\" \
     --extra-cflags=\"-I${root_dir}/include\" \
 "
-if [ "$build" = "DEBUG"  ];then
+if [ "$conf" = "DEBUG"  ];then
     cmd="$cmd \
         --disable-optimizations \
         --disable-stripping     \
@@ -70,7 +73,7 @@ replace_macro "CONFIG_DOC"          "$config_file"
 replace_macro "HAVE_TERMIOS_H"      "$config_file"
 
 
-line='#include \"defines.h\"'
+line='#include \"../defines.h\"'
 cnt=$(grep -n "$line" $config_file|wc -l)
 #echo $cnt
 #cmd1="grep -n \"$line\" $config_file|wc -l"
@@ -84,3 +87,4 @@ elif [ $cnt -eq 1 ];then
 else
     echo "WARNING:Too many including of defines.h in config.h, please check"
 fi
+cd -
