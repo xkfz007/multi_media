@@ -1,24 +1,70 @@
 #!/bin/bash
-conf="RELEASE"
+set -o
+CONF="RELEASE"
 if [ $# -ge 1 ];then
-    conf=$(echo $1|tr '[a-z]' '[A-Z]')
+    CONF=$(echo $1|tr '[a-z]' '[A-Z]')
 fi
+
 current_dir=`pwd`
-build_dir="${current_dir}/builds"
+build_dir="${current_dir}/$CONF"
 if [ ! -e $build_dir ];then
     mkdir $build_dir
 fi
+
 #root_dir=`realpath "${current_dir}/../"`
-root_dir=`cd "${current_dir}/../";pwd`
+root_dir=`cd "${current_dir}/../source";pwd`
 echo "root_dir="$root_dir
 
+#sys=$(uname -o)
+#if [ $sys = "Cywin" ];then
+#    a=
+#
 
-export PKG_CONFIG_PATH="$PKG_GONFIG_PATH:${root_dir}/lib/pkgconfig"
+sys_name="ubuntu"
+LIB_DIR="${current_dir}/${sys_name}/lib"
+INC_DIR="${current_dir}/${sys_name}/include"
+PKG_DIR="${LIB_DIR}/pkgconfig"
+PKG_PREFIX="${current_dir}/${sys_name}"
+echo "pkg_dir="$PKG_DIR
+
+# general pkg file for some libs
+pkgconfig_generate(){
+    name=$1
+    comment=$2
+    version=$3
+    libs=$4
+    pkg_prefix=$5
+    cat <<EOF  >"${pkg_prefix}/lib/pkgconfig/${name}.pc"
+prefix=${pkg_prefix}
+exec_prefix=\${prefix}
+libdir=\${exec_prefix}/lib
+includedir=\${prefix}/include
+
+Name: $name
+Description: $comment
+Version: $version
+Libs: -L\${libdir} -l${name} ${libs}
+Cflags: -I\${includedir}
+EOF
+
+}
+
+regen_pkg=1
+if [ $regen_pkg = "1" ];then
+    test -e ${PKG_DIR} || mkdir -p ${PKG_DIR}
+    pkgconfig_generate "x264"    "H.264 (MPEG4 AVC) encoder library" "0.148.x" "-lpthread -lm -ldl"      "${PKG_PREFIX}"
+    pkgconfig_generate "x265"    "H.265/HEVC video encoder"          "1.9"     "-lstdc++ -lm -lrt -ldl"  "${PKG_PREFIX}"
+    pkgconfig_generate "fdk-aac" "AAC Codec Library"                 "0.1.4"   "-lm"                     "${PKG_PREFIX}"
+fi
+
+
+export PKG_CONFIG_PATH="$PKG_GONFIG_PATH:${PKG_DIR}"
 echo "PKG_PATH="$PKG_CONFIG_PATH
 
 cd ${build_dir}
 cmd="${root_dir}/configure  \
     --prefix=$build_dir \
+    --pkg-config-flags=\"--static\" \
     --disable-doc       \
     --disable-htmlpages \
     --disable-manpages  \
@@ -28,19 +74,36 @@ cmd="${root_dir}/configure  \
     --disable-ffserver  \
     --disable-shared    \
     --enable-gpl        \
-    --pkg-config-flags=\"--static\" \
     --enable-nonfree    \
     --enable-static     \
-    --enable-libfaac    \
     --enable-libfdk_aac \
     --enable-libx264    \
     --enable-libx265    \
-    --enable-libvpx     \
-    --enable-libxvid    \
-    --extra-ldflags=\"-L${root_dir}/lib\" \
-    --extra-cflags=\"-I${root_dir}/include\" \
+    --disable-d3d11va                 \
+    --disable-dxva2                   \
+    --disable-vaapi                   \
+    --disable-vda                     \
+    --disable-vdpau                   \
+    --disable-videotoolbox            \
+    --disable-bzlib                   \
+    --disable-iconv                   \
+    --disable-libxcb                  \
+    --disable-libxcb-shm              \
+    --disable-libxcb-xfixes           \
+    --disable-libxcb-shape            \
+    --disable-lzma                    \
+    --disable-sdl2                    \
+    --disable-xlib                    \
+    --disable-zlib                    \
+    --disable-schannel                \
+    --disable-securetransport         \
+    --disable-outdevs                 \
+    --disable-indevs                  \
+    --enable-indev=lavfi              \
+    --extra-ldflags=\"-L${LIB_DIR}\" \
+    --extra-cflags=\"-I${INC_DIR}\" \
 "
-if [ "$conf" = "DEBUG"  ];then
+if [ "$CONF" = "DEBUG"  ];then
     cmd="$cmd \
         --disable-optimizations \
         --disable-stripping     \
@@ -57,6 +120,7 @@ if [ ! -e $config_file  ];then
     exit
 fi
 
+# modify the config.h for cygwin
 function replace_macro
 {
     def=$1
@@ -66,13 +130,16 @@ function replace_macro
 
 #sed -i "s/.*HAVE_ARC4RANDOM.*/#define HAVE_ARC4RANDOM 0/g" config.h
 
-replace_macro "HAVE_ARC4RANDOM"     "$config_file"
-replace_macro "HAVE_GETTIMEOFDAY"   "$config_file"
-replace_macro "HAVE_GLOB"           "$config_file"
-replace_macro "CONFIG_DOC"          "$config_file"
-replace_macro "HAVE_TERMIOS_H"      "$config_file"
+if [ "$sys_name" = "cygwin" ];then
+    replace_macro "HAVE_ARC4RANDOM"     "$config_file"
+    replace_macro "HAVE_GETTIMEOFDAY"   "$config_file"
+    replace_macro "HAVE_GLOB"           "$config_file"
+    replace_macro "CONFIG_DOC"          "$config_file"
+    replace_macro "HAVE_TERMIOS_H"      "$config_file"
+fi
 
 
+#add defines.h to config.h
 line='#include \"../defines.h\"'
 cnt=$(grep -n "$line" $config_file|wc -l)
 #echo $cnt
