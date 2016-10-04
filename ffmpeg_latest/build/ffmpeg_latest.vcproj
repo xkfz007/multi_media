@@ -47,7 +47,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\source\;..\source\include"
+				AdditionalIncludeDirectories="..\source\;."
 				PreprocessorDefinitions="WIN32;_DEBUG;_CONSOLE;DEBUG"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -10127,6 +10127,14 @@
 		</File>
 		<File
 			RelativePath="..\source\config.asm"
+			>
+		</File>
+		<File
+			RelativePath=".\config.h"
+			>
+		</File>
+		<File
+			RelativePath="..\source\configure"
 			>
 		</File>
 		<File
