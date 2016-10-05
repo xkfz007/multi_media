@@ -147,6 +147,13 @@ function replace_line
    content=$3
    sed -i "${lineno}s/.*/${content}/g" $f
 }
+function replace_line2
+{
+   f=$1
+   pat=$2
+   content=$3
+   sed -i "/${pat}/s/.*/${content}/g" $f
+}
 function change_pc
 {
     f=$1
@@ -155,7 +162,8 @@ function change_pc
     path2=${path//\//\\\/}
     echo "path2"=$path2
     line_content="prefix=$path2"
-    replace_line "$f" 1 "$line_content"
+    #replace_line "$f" 1 "$line_content"
+    replace_line "$f" "^prefix=" "$line_content"
 }
 
 #change the pkg file
