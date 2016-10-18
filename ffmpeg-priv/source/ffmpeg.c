@@ -4638,6 +4638,10 @@ int main(int argc, char* argv[]){
     			}
     			av_log(NULL,AV_LOG_DEBUG,"5:outname=%s out_ext=%s\n",outname,out_ext?out_ext:"NULL");
     		}
+            if(!strcmp(infilename,outname)){
+                sprintf(outname+len-in_ext_len,"_out%s",out_ext);
+    			av_log(NULL,AV_LOG_ERROR,"Output filename is same with input filename, changed to '%s'\n",outname);
+            }
     		argv_internal[otag_list[j]]=outname;
     	}
 

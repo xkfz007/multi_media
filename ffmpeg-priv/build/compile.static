@@ -163,7 +163,7 @@ function change_pc
     echo "path2"=$path2
     line_content="prefix=$path2"
     #replace_line "$f" 1 "$line_content"
-    replace_line "$f" "^prefix=" "$line_content"
+    replace_line2 "$f" "^prefix=" "$line_content"
 }
 
 #change the pkg file
@@ -172,6 +172,13 @@ for i in $pcfile_list
 do
     change_pc "$PKG_DIR/$i" "$PKG_PREFIX"
 done
+
+FFVERSION=$(cat ${SOURCE_DIR}/VERSION)
+SDL_VERSION='sdl'
+if [[ "$FFVERSION" == "N-"* ]];then
+    SDL_VERSION='sdl2'
+fi
+
 
 cmd="${SOURCE_DIR}/configure  \
     --prefix=${BUILDS_DIR} \
@@ -191,11 +198,6 @@ cmd="${SOURCE_DIR}/configure  \
     --enable-static     \
     --enable-libx264    \
     --enable-libx265    \
-    --enable-libfdk_aac \
-    --enable-libvpx     \
-    --enable-libxvid    \
-    --enable-libfontconfig \
-    --enable-libfreetype   \
     --disable-d3d11va                 \
     --disable-dxva2                   \
     --disable-vaapi                   \
@@ -209,15 +211,21 @@ cmd="${SOURCE_DIR}/configure  \
     --disable-libxcb-xfixes           \
     --disable-libxcb-shape            \
     --disable-lzma                    \
-    --disable-sdl2                    \
     --disable-xlib                    \
     --disable-zlib                    \
     --disable-schannel                \
     --disable-securetransport         \
+    --disable-${SDL_VERSION}          \
     --disable-outdevs                 \
     --disable-indevs                  \
     --enable-indev=lavfi              \
 "
+    #--enable-libxvid    \
+    #--enable-libfontconfig \
+    #--enable-libfreetype   \
+    #--enable-libfdk_aac \
+    #--enable-libvpx     \
+
 if [ "$CONF" = "DEBUG"  ];then
     cmd="$cmd \
         --disable-optimizations \
@@ -246,11 +254,12 @@ function replace_macro
 #sed -i "s/.*HAVE_ARC4RANDOM.*/#define HAVE_ARC4RANDOM 0/g" config.h
 
 if [ "$sys_name" = "cygwin" ];then
-    replace_macro "HAVE_ARC4RANDOM"     "$config_file"
-    replace_macro "HAVE_GETTIMEOFDAY"   "$config_file"
-    replace_macro "HAVE_GLOB"           "$config_file"
-    replace_macro "CONFIG_DOC"          "$config_file"
-    replace_macro "HAVE_TERMIOS_H"      "$config_file"
+    replace_macro "HAVE_ARC4RANDOM"      "$config_file"
+    replace_macro "HAVE_GETTIMEOFDAY"    "$config_file"
+    replace_macro "HAVE_GLOB"            "$config_file"
+    replace_macro "CONFIG_DOC"           "$config_file"
+    replace_macro "HAVE_TERMIOS_H"       "$config_file"
+    replace_macro "HAVE_SETDLLDIRECTORY" "$config_file"
 fi
 
 
