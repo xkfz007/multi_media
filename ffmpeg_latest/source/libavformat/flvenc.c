@@ -218,8 +218,8 @@ static void write_metadata(AVFormatContext *s, unsigned int ts)
 
     /* write meta_tag */
     avio_w8(pb, 18);            // tag type META
-    metadata_size_pos = avio_tell(pb);
-    avio_wb24(pb, 0);           // size of data part (sum of all parts below)
+    metadata_size_pos = avio_tell(pb);//+felix:used to calculate size of metadata to write into stream
+    avio_wb24(pb, 0);           // size of data part (sum of all parts below)//+felix:0 is for current, will be changed later
     avio_wb24(pb, ts);          // timestamp
     avio_wb32(pb, 0);           // reserved
 
@@ -288,6 +288,7 @@ static void write_metadata(AVFormatContext *s, unsigned int ts)
     }
 
     ff_standardize_creation_time(s);
+	//+felix: add the tags from the input format
     while ((tag = av_dict_get(s->metadata, "", tag, AV_DICT_IGNORE_SUFFIX))) {
         if(   !strcmp(tag->key, "width")
             ||!strcmp(tag->key, "height")
@@ -411,7 +412,12 @@ static void flv_write_codec_header(AVFormatContext* s, AVCodecParameters* par) {
         avio_wb32(pb, data_size + 11); // previous tag size
     }
 }
-
+/*+Felix
+  write header for flv, including:
+  9 bytes flv header
+  onMetaData
+  Video/Audio Tags
+  */
 static int flv_write_header(AVFormatContext *s)
 {
     int i;
@@ -459,7 +465,7 @@ static int flv_write_header(AVFormatContext *s)
                 return AVERROR(EINVAL);
             }
             flv->audio_par = par;
-            if (get_audio_flags(s, par) < 0)
+            if (get_audio_flags(s, par) < 0)//+Felix: returned value is not used. For AAC, 48000HZ is not checked.
                 return unsupported_codec(s, "Audio", par->codec_id);
             if (par->codec_id == AV_CODEC_ID_PCM_S16BE)
                 av_log(s, AV_LOG_WARNING,
@@ -494,15 +500,15 @@ static int flv_write_header(AVFormatContext *s)
 
     flv->delay = AV_NOPTS_VALUE;
 
-    avio_write(pb, "FLV", 3);
+    avio_write(pb, "FLV", 3);//+Felix: 3 bytes flv tag
     avio_w8(pb, 1);
     avio_w8(pb, FLV_HEADER_FLAG_HASAUDIO * !!flv->audio_par +
-                FLV_HEADER_FLAG_HASVIDEO * !!flv->video_par);
-    avio_wb32(pb, 9);
-    avio_wb32(pb, 0);
+                FLV_HEADER_FLAG_HASVIDEO * !!flv->video_par);//+Felix: good trick
+    avio_wb32(pb, 9);//+felix:DataOffset
+    avio_wb32(pb, 0);//+felix:PreviousTagSize0
 
     for (i = 0; i < s->nb_streams; i++)
-        if (s->streams[i]->codecpar->codec_tag == 5) {
+        if (s->streams[i]->codecpar->codec_tag == 5) {//+felix:Null type
             avio_w8(pb, 8);     // message type
             avio_wb24(pb, 0);   // include flags
             avio_wb24(pb, 0);   // time stamp
@@ -511,7 +517,7 @@ static int flv_write_header(AVFormatContext *s)
             flv->reserved = 5;
         }
 
-    write_metadata(s, 0);
+    write_metadata(s, 0);//+felix: onMetaData
 
     for (i = 0; i < s->nb_streams; i++) {
         flv_write_codec_header(s, s->streams[i]->codecpar);
