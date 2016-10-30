@@ -184,8 +184,7 @@ if [ $LIBASS_ENABLED = "1" ];then
 fi
 
 if [ "$CONF" = "DEBUG"  ];then
-    cmd="$cmd --disable-optimizations --disable-stripping --disable-asm"
-    # --disable-pthreads
+    cmd="$cmd --disable-optimizations --disable-stripping --disable-asm --disable-pthreads"
 fi
 echo $cmd
 eval $cmd

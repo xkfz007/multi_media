@@ -934,9 +934,12 @@ FF_ENABLE_DEPRECATION_WARNINGS
         if (st->internal->avctx_inited) {
             frame_size = av_get_audio_frame_duration(st->internal->avctx, pkt->size);
             sample_rate = st->internal->avctx->sample_rate;
+			av_log(s,AV_LOG_TRACE,"st->codecpar->sample_rate=%d st->internal->avctx->sample_rate=%d\n",
+                st->codecpar->sample_rate, st->internal->avctx->sample_rate);
         } else {
             frame_size = av_get_audio_frame_duration2(st->codecpar, pkt->size);
             sample_rate = st->codecpar->sample_rate;
+			av_log(s,AV_LOG_TRACE,"st->codecpar->sample_rate=%d\n",st->codecpar->sample_rate);
         }
         if (frame_size <= 0 || sample_rate <= 0)
             break;
@@ -1169,6 +1172,8 @@ static void compute_pkt_fields(AVFormatContext *s, AVStream *st,
     int onein_oneout = st->codecpar->codec_id != AV_CODEC_ID_H264 &&
                        st->codecpar->codec_id != AV_CODEC_ID_HEVC;
 
+    av_log(s,AV_LOG_TRACE,"compute_pkt_fields: st->codecpar->sample_rate=%d st->internal->avctx->sample_rate=%d\n",
+        st->codecpar->sample_rate, st->internal->avctx->sample_rate);
     if (s->flags & AVFMT_FLAG_NOFILLIN)
         return;
 
@@ -1579,6 +1584,8 @@ FF_ENABLE_DEPRECATION_WARNINGS
         } else if (st->discard < AVDISCARD_ALL) {
             if ((ret = parse_packet(s, &cur_pkt, cur_pkt.stream_index)) < 0)
                 return ret;
+            //av_log(s, AV_LOG_TRACE, "st->codecpar->sample_rate=%d st->internal->avctx->sample_rate=%d\n",
+            //    st->codecpar->sample_rate, st->internal->avctx->sample_rate);
             st->codecpar->sample_rate = st->internal->avctx->sample_rate;
             st->codecpar->bit_rate = st->internal->avctx->bit_rate;
             st->codecpar->channels = st->internal->avctx->channels;

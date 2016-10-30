@@ -545,6 +545,7 @@ static int amf_parse_object(AVFormatContext *s, AVStream *astream,
                         flv_set_audio_codec(s, astream, apar, id);
                     } else if (!strcmp(key, "audiosamplerate") && apar) {
                         apar->sample_rate = num_val;
+                        av_log(s, AV_LOG_TRACE,"apar->sample_rate=%d\n",apar->sample_rate);
                     } else if (!strcmp(key, "audiosamplesize") && apar) {
                         apar->bits_per_coded_sample = num_val;
                     } else if (!strcmp(key, "stereo") && apar) {
@@ -996,6 +997,10 @@ skip:
                     break;
             }
         }
+        if(st)
+            av_log(s, AV_LOG_TRACE, "flv_read_packet-1: st->codecpar->sample_rate=%d st->internal->avctx->sample_rate=%d\n",
+            st->codecpar->sample_rate,st->internal->avctx->sample_rate);
+
         if (i == s->nb_streams) {
             static const enum AVMediaType stream_types[] = {AVMEDIA_TYPE_VIDEO, AVMEDIA_TYPE_AUDIO, AVMEDIA_TYPE_SUBTITLE};
             av_log(s, AV_LOG_WARNING, "%s stream discovered after head already parsed\n", av_get_media_type_string(stream_types[stream_type]));
@@ -1005,6 +1010,8 @@ skip:
 
         }
         av_log(s, AV_LOG_TRACE, "%d %X %d \n", stream_type, flags, st->discard);
+        av_log(s, AV_LOG_TRACE, "flv_read_packet-0: st->codecpar->sample_rate=%d st->internal->avctx->sample_rate=%d\n",
+            st->codecpar->sample_rate,st->internal->avctx->sample_rate);
 
         if (s->pb->seekable &&
             ((flags & FLV_VIDEO_FRAMETYPE_MASK) == FLV_FRAME_KEY ||
@@ -1058,6 +1065,7 @@ retry_duration:
         sample_rate = 44100 << ((flags & FLV_AUDIO_SAMPLERATE_MASK) >>
                                 FLV_AUDIO_SAMPLERATE_OFFSET) >> 3;
         bits_per_coded_sample = (flags & FLV_AUDIO_SAMPLESIZE_MASK) ? 16 : 8;
+        av_log(s, AV_LOG_TRACE, "channels=%d sample_rate=%d\n", channels, sample_rate);
         if (!st->codecpar->channels || !st->codecpar->sample_rate ||
             !st->codecpar->bits_per_coded_sample) {
             st->codecpar->channels              = channels;
@@ -1086,6 +1094,8 @@ retry_duration:
             sample_rate = par->sample_rate;
             avcodec_parameters_free(&par);
         }
+        av_log(s, AV_LOG_TRACE, "last_channels=%d last_sample_rate=%d channels=%d sample_rate=%d\n",
+            flv->last_channels, flv->last_sample_rate, channels, sample_rate);
     } else if (stream_type == FLV_STREAM_TYPE_VIDEO) {
         size -= flv_set_video_codec(s, st, flags & FLV_VIDEO_CODECID_MASK, 1);
     } else if (stream_type == FLV_STREAM_TYPE_DATA) {
@@ -1156,6 +1166,8 @@ retry_duration:
         ret = FFERROR_REDO;
         goto leave;
     }
+    av_log(s, AV_LOG_TRACE, "flv_read_packet: st->codecpar->sample_rate=%d st->internal->avctx->sample_rate=%d\n",
+        st->codecpar->sample_rate,st->internal->avctx->sample_rate);
 
     ret = av_get_packet(s->pb, pkt, size);
     if (ret < 0)

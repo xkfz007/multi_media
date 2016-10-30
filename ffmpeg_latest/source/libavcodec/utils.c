@@ -2111,6 +2111,7 @@ static int apply_param_change(AVCodecContext *avctx, AVPacket *avpkt)
         }
         avctx->sample_rate = val;
         size -= 4;
+		av_log(avctx, AV_LOG_TRACE, "avctx->sample_rate=%d\n",avctx->sample_rate);
     }
     if (flags & AV_SIDE_DATA_PARAM_CHANGE_DIMENSIONS) {
         if (size < 8)
@@ -4131,6 +4132,7 @@ int avcodec_parameters_from_context(AVCodecParameters *par,
         par->video_delay         = codec->has_b_frames;
         break;
     case AVMEDIA_TYPE_AUDIO:
+		av_log(codec, AV_LOG_TRACE, "par->sample_rate=%d codec->sample_rate=%d\n", par->sample_rate,codec->sample_rate);
         par->format           = codec->sample_fmt;
         par->channel_layout   = codec->channel_layout;
         par->channels         = codec->channels;
@@ -4186,6 +4188,7 @@ int avcodec_parameters_to_context(AVCodecContext *codec,
         codec->has_b_frames           = par->video_delay;
         break;
     case AVMEDIA_TYPE_AUDIO:
+        av_log(codec, AV_LOG_TRACE, "codec->sample_rate=%d par->sample_rate=%d\n", codec->sample_rate,par->sample_rate);
         codec->sample_fmt       = par->format;
         codec->channel_layout   = par->channel_layout;
         codec->channels         = par->channels;
