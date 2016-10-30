@@ -1,0 +1,8 @@
+Name: Fontconfig
+Description: Font configuration and customization library
+Version: 2.12.0
+Requires:  freetype2
+Requires.private:  expat
+Libs: -L${libdir} -lfontconfig
+Libs.private: -lexpat   -lfreetype    
+Cflags: -I${includedir}   -I/usr/include/freetype2    

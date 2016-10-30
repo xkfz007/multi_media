@@ -1,14 +1,15 @@
 #!/bin/bash
-#set -o
+#set -e
+set -x
 
 #check system
 sys=$(uname -o)
 if [[ $sys =~ "Cygwin" ]];then
     echo "sys="$sys
-    sys_name="cygwin"
+    SYS_NAME="cygwin"
 elif [[ $sys =~ "Linux" ]];then
     echo "sys="$sys
-    sys_name="linux"
+    SYS_NAME="linux"
 fi
 
 #check configuration
@@ -34,197 +35,151 @@ fi
 
 #check directories
 CURRENT_DIR=`pwd`
-
-#SOURCE_DIR=`realpath "${CURRENT_DIR}/../"`
-ROOT_DIR=`cd "${CURRENT_DIR}/../";pwd`
+ROOT_DIR=`readlink -f "$CURRENT_DIR/../"`
 SOURCE_DIR="$ROOT_DIR/source"
 EXTERNAL_LIBS_DIR="$ROOT_DIR/external_libs"
 
-LIB_DIR="${CURRENT_DIR}/${sys_name}/lib"
-INC_DIR="${CURRENT_DIR}/${sys_name}/include"
+LIB_DIR="${ROOT_DIR}/build/${SYS_NAME}/lib"
+INC_DIR="${ROOT_DIR}/build/${SYS_NAME}/include"
 PKG_DIR="${LIB_DIR}/pkgconfig"
+if [ ! -e $PKG_DIR ];then
+    mkdir $PKG_DIR
+fi
+PKG_INTERNAL="$LIB_DIR/internal_pc"
 export PKG_CONFIG_PATH="$PKG_GONFIG_PATH:${PKG_DIR}"
-PKG_PREFIX="${CURRENT_DIR}/${sys_name}"
+PKG_PREFIX="${ROOT_DIR}/build/${SYS_NAME}"
 
-function get_tar_cmd
-{
-    local f=$1
-    local ext=${f##*.}
-    local cmd=''
-    if [ "$ext" = "bz2" ];then
-        cmd='-jx'
-    elif [ "$ext" = "gz" ];then
-        cmd='-zx'
-    elif [ "$ext" = "xz" ];then
-        cmd='-Jx'
+X264_ENABLED=1
+X265_ENABLED=1
+VPX_ENABLED=0
+FDKAAC_ENABLED=0
+XVID_ENABLED=0
+FREETYPE_ENABLED=0
+FONTCONFIG_ENABLED=0
+LIBASS_ENABLED=0
+
+pkgconfig_generate(){
+    name=$1
+    pkg_dir=$2
+    pkg_internal_dir=$3
+    prefix=$4
+    pkg_internal_file="${pkg_internal_dir}/${name}.ipc"
+    pkg_file="${pkg_dir}/${name}.pc"
+    if [ ! -e $pkg_internal_file ];then
+        echo "ERROR: $pkg_internal_file does not exist"
+        exit
     fi
-    echo $cmd
+    cat <<EOF  >$pkg_file
+prefix=$prefix
+exec_prefix=\${prefix}
+libdir=\${exec_prefix}/lib
+includedir=\${prefix}/include
+
+EOF
+   cat $pkg_internal_file >>$pkg_file
 }
 
-function compile_lib
-{
-    local FILE=$1
-    local BCMD=$2
-    echo $BCMD
-    local BDIR=${FILE%.tar.*}
-    if [ -e $BDIR ];then
-        rm -r $BDIR
-    fi
-    local cmd=$(get_tar_cmd $FILE)
-    echo $cmd
-    mkdir "$BDIR"
-    cd "$CURRENT_DIR/$BDIR" && \
-        cat "$EXTERNAL_LIBS_DIR/$FILE" |tar $cmd --strip-components=1 && \
-        eval $BCMD && \
-        make && \
-        make install && \
-        make clean
-    if [ -d "include" ];then
-        cp -rvf include/*  "$INC_DIR"
-    fi
-    if [ -d "lib" ];then
-        cp -rvf lib/* "$LIB_DIR"
-    fi
+if [ $X264_ENABLED = "1" ];then
+    pkgconfig_generate x264       "$PKG_DIR" "$PKG_INTERNAL" "$PKG_PREFIX" 
+fi
+if [ $X265_ENABLED = "1" ];then
+    pkgconfig_generate x265       "$PKG_DIR" "$PKG_INTERNAL" "$PKG_PREFIX"
+fi
+if [ $LIBASS_ENABLED = "1" ];then
+    pkgconfig_generate libass     "$PKG_DIR" "$PKG_INTERNAL" "$PKG_PREFIX"
+fi
+if [ $FONTCONFIG_ENABLED = "1" ];then
+    pkgconfig_generate fontconfig "$PKG_DIR" "$PKG_INTERNAL" "$PKG_PREFIX"
+fi
+if [ $FREETYPE_ENABLED = "1" ];then
+    pkgconfig_generate freetype2  "$PKG_DIR" "$PKG_INTERNAL" "$PKG_PREFIX"
+fi
 
-    cd "$CURRENT_DIR"
-}
+if [ ! -x ${SOURCE_DIR}/configure ];then
+    chmod u+x ${SOURCE_DIR}/configure
+fi
+if [ ! -x ${SOURCE_DIR}/version.sh ];then
+    chmod u+x ${SOURCE_DIR}/version.sh
+fi
 
-
-BUILDS_DIR="${CURRENT_DIR}/$CONF"
+BUILDS_DIR="${ROOT_DIR}/build/$CONF"
 if [ ! -e $BUILDS_DIR ];then
     mkdir $BUILDS_DIR
 fi
 
 cd ${BUILDS_DIR}
 
-#compile external libs
-DO_COMPILING=0
-if [ $DO_COMPILING -eq 1 ];then
-    #x264
-    X264_FILE="x264-snapshot-20160829-2245-stable.tar.bz2"
-    X264_CMD='./configure --prefix="`pwd`" --disable-cli --enable-static'
-    #X264_PC='x264.pc'
-    compile_lib "$X264_FILE" "$X264_CMD" #"$X264_PC"
-    
-    #x265
-    X265_FILE="x265_2.0.tar.gz"
-    X265_CMD='cmake -G "Unix Makefiles" -DCMAKE_INSTALL_PREFIX="`pwd`" -DENABLE_STATIC:bool=on -DENABLE_SHARED:bool=off -DENABLE_CLI:bool=off "`pwd`/source"'
-    #X265_PC='x265.pc'
-    compile_lib "$X265_FILE" "$X265_CMD" #"$X265_PC"
 
-    #vpx
-    VPX_FILE="libvpx-1.6.0.tar.bz2"
-    VPX_CMD='./configure --prefix="`pwd`" --enable-vp8 --enable-vp9  --disable-shared --enable-static --disable-examples --disable-docs'
-    #VPX_PC='vpx.pc'
-    compile_lib "$VPX_FILE" "$VPX_CMD" #"$VPX_PC"
-
-    #fdk-aac
-    FDKAAC_FILE="fdk-aac-0.1.4.tar.gz"
-    FDKAAC_CMD='./autogen.sh && ./configure --prefix="`pwd`" --disable-shared '
-    #FDKAAC_PC='fdk-aac.pc'
-    compile_lib "$FDKAAC_FILE" "$FDKAAC_CMD" #"$FDKAAC_PC"
-    
-    #xvid
-    XVID_FILE="xvidcore-1.3.4.tar.gz"
-    XVID_CMD='cd build/generic && ./configure --prefix="`pwd`" --bindir="`pwd`/bin" --datadir="`pwd`" '
-    compile_lib "$XVID_FILE" "$XVID_CMD"
-
-    ##freetype
-    #FREETYPE_FILE="freetype-2.5.5.tar.xz"
-    #FREETYPE_CMD=''
-
-    ##fontconfig
-    #FONTCONFIG_FILE="freetype-2.5.5.tar.xz"
-    #FONTCONFIG_CMD=''
-
+FFVERSION=$(cat ${SOURCE_DIR}/VERSION)
+SDL_VERSION='sdl'
+if [[ "$FFVERSION" == "N-"* ]];then
+    SDL_VERSION='sdl2'
 fi
-
-
-function replace_line
-{
-   f=$1
-   lineno=$2
-   content=$3
-   sed -i "${lineno}s/.*/${content}/g" $f
-}
-function replace_line2
-{
-   f=$1
-   pat=$2
-   content=$3
-   sed -i "/${pat}/s/.*/${content}/g" $f
-}
-function change_pc
-{
-    f=$1
-    path=$2
-    echo "path1"=$path
-    path2=${path//\//\\\/}
-    echo "path2"=$path2
-    line_content="prefix=$path2"
-    #replace_line "$f" 1 "$line_content"
-    replace_line "$f" "^prefix=" "$line_content"
-}
-
-#change the pkg file
-pcfile_list=(x264.pc x265.pc vpx.pc fdk-aac.pc)
-for i in $pcfile_list
-do
-    change_pc "$PKG_DIR/$i" "$PKG_PREFIX"
-done
 
 cmd="${SOURCE_DIR}/configure  \
     --prefix=${BUILDS_DIR} \
     --pkg-config-flags=\"--static\" \
     --extra-ldflags=\"-L${LIB_DIR}\" \
     --extra-cflags=\"-I${INC_DIR}\" \
-    --disable-doc       \
-    --disable-htmlpages \
-    --disable-manpages  \
-    --disable-podpages  \
-    --disable-txtpages  \
-    --disable-ffplay    \
-    --disable-ffserver  \
-    --disable-shared    \
-    --enable-gpl        \
-    --enable-nonfree    \
-    --enable-static     \
-    --enable-libx264    \
-    --enable-libx265    \
-    --enable-libfdk_aac \
-    --enable-libvpx     \
-    --enable-libxvid    \
-    --enable-libfontconfig \
-    --enable-libfreetype   \
-    --disable-d3d11va                 \
-    --disable-dxva2                   \
-    --disable-vaapi                   \
-    --disable-vda                     \
-    --disable-vdpau                   \
-    --disable-videotoolbox            \
-    --disable-bzlib                   \
-    --disable-iconv                   \
-    --disable-libxcb                  \
-    --disable-libxcb-shm              \
-    --disable-libxcb-xfixes           \
-    --disable-libxcb-shape            \
-    --disable-lzma                    \
-    --disable-sdl2                    \
-    --disable-xlib                    \
-    --disable-zlib                    \
-    --disable-schannel                \
-    --disable-securetransport         \
-    --disable-outdevs                 \
-    --disable-indevs                  \
-    --enable-indev=lavfi              \
 "
+cmd=${cmd}"--disable-doc       \
+    --disable-htmlpages        \
+    --disable-manpages         \
+    --disable-podpages         \
+    --disable-txtpages         \
+    --disable-ffplay           \
+    --disable-ffserver         \
+    --disable-shared           \
+    --disable-d3d11va          \
+    --disable-dxva2            \
+    --disable-vaapi            \
+    --disable-vda              \
+    --disable-vdpau            \
+    --disable-videotoolbox     \
+    --disable-bzlib            \
+    --disable-iconv            \
+    --disable-libxcb           \
+    --disable-libxcb-shm       \
+    --disable-libxcb-xfixes    \
+    --disable-libxcb-shape     \
+    --disable-lzma             \
+    --disable-xlib             \
+    --disable-zlib             \
+    --disable-schannel         \
+    --disable-securetransport  \
+    --disable-${SDL_VERSION}   \
+    --disable-outdevs          \
+    --disable-indevs           \
+"
+
+cmd=${cmd}"--enable-gpl --enable-nonfree --enable-static --enable-indev=lavfi"
+if [ $X264_ENABLED = "1" ];then
+    cmd=${cmd}" --enable-libx264"
+fi
+if [ $X265_ENABLED = "1" ];then
+    cmd=${cmd}" --enable-libx265"
+fi
+if [ $FDKAAC_ENABLED = "1" ];then
+    cmd=${cmd}" --enable-libfdk_aac"
+fi
+if [ $VPX_ENABLED = "1" ];then
+    cmd=${cmd}" --enable-libvpx"
+fi
+if [ $XVID_ENABLED = "1" ];then
+    cmd=${cmd}" --enable-libxvid"
+fi
+if [ $FONTCONFIG_ENABLED = "1" ];then
+    cmd=${cmd}" --enable-libfontconfig"
+fi
+if [ $FREETYPE_ENABLED = "1" ];then
+    cmd=${cmd}" --enable-libfreetype"
+fi
+if [ $LIBASS_ENABLED = "1" ];then
+    cmd=${cmd}" --enable-libass"
+fi
+
 if [ "$CONF" = "DEBUG"  ];then
-    cmd="$cmd \
-        --disable-optimizations \
-        --disable-stripping     \
-        --disable-asm           \
-        --disable-pthreads      \
-        "
+    cmd="$cmd --disable-optimizations --disable-stripping --disable-asm --disable-pthreads"
 fi
 echo $cmd
 eval $cmd
@@ -245,7 +200,7 @@ function replace_macro
 
 #sed -i "s/.*HAVE_ARC4RANDOM.*/#define HAVE_ARC4RANDOM 0/g" config.h
 
-if [ "$sys_name" = "cygwin" ];then
+if [ "$SYS_NAME" = "cygwin" ];then
     replace_macro "HAVE_ARC4RANDOM"     "$config_file"
     replace_macro "HAVE_GETTIMEOFDAY"   "$config_file"
     replace_macro "HAVE_GLOB"           "$config_file"

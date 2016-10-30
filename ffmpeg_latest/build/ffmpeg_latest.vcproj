@@ -10138,7 +10138,7 @@
 			>
 		</File>
 		<File
-			RelativePath="..\source\defines.h"
+			RelativePath=".\defines.h"
 			>
 		</File>
 		<File
