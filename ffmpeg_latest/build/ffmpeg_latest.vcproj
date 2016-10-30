@@ -10122,23 +10122,11 @@
 			>
 		</File>
 		<File
-			RelativePath="..\source\cmdutils_opencl.c"
-			>
-		</File>
-		<File
-			RelativePath="..\source\config.asm"
-			>
-		</File>
-		<File
 			RelativePath=".\config.h"
 			>
 		</File>
 		<File
 			RelativePath="..\source\configure"
-			>
-		</File>
-		<File
-			RelativePath=".\defines.h"
 			>
 		</File>
 		<File
@@ -10150,35 +10138,11 @@
 			>
 		</File>
 		<File
-			RelativePath="..\source\ffmpeg_cuvid.c"
-			>
-		</File>
-		<File
-			RelativePath="..\source\ffmpeg_dxva2.c"
-			>
-		</File>
-		<File
 			RelativePath="..\source\ffmpeg_filter.c"
 			>
 		</File>
 		<File
 			RelativePath="..\source\ffmpeg_opt.c"
-			>
-		</File>
-		<File
-			RelativePath="..\source\ffmpeg_qsv.c"
-			>
-		</File>
-		<File
-			RelativePath="..\source\ffmpeg_vaapi.c"
-			>
-		</File>
-		<File
-			RelativePath="..\source\ffmpeg_vdpau.c"
-			>
-		</File>
-		<File
-			RelativePath="..\source\ffmpeg_videotoolbox.c"
 			>
 		</File>
 		<File
@@ -10199,14 +10163,6 @@
 		</File>
 		<File
 			RelativePath="..\source\ffserver_config.h"
-			>
-		</File>
-		<File
-			RelativePath="..\source\glob.c"
-			>
-		</File>
-		<File
-			RelativePath="..\source\glob.h"
 			>
 		</File>
 	</Files>

@@ -37,17 +37,22 @@ fi
 CURRENT_DIR=`pwd`
 ROOT_DIR=`readlink -f "$CURRENT_DIR/../"`
 SOURCE_DIR="$ROOT_DIR/source"
-EXTERNAL_LIBS_DIR="$ROOT_DIR/external_libs"
+EXTERNAL_LIBS_DIR=`readlink -f "$ROOT_DIR/../external_libs"`
+if [ ! -e $PKG_DIR ];then
+    echo "ERROR: ${EXTERNAL_LIBS_DIR} does not exist"
+    exit
+fi
 
-LIB_DIR="${ROOT_DIR}/build/${SYS_NAME}/lib"
-INC_DIR="${ROOT_DIR}/build/${SYS_NAME}/include"
-PKG_DIR="${LIB_DIR}/pkgconfig"
+LIB_DIR="${EXTERNAL_LIBS_DIR}/${SYS_NAME}/lib"
+INC_DIR="${EXTERNAL_LIBS_DIR}/${SYS_NAME}/include"
+
+PKG_DIR="${ROOT_DIR}/build/pkgconfig"
 if [ ! -e $PKG_DIR ];then
     mkdir $PKG_DIR
 fi
 PKG_INTERNAL="$LIB_DIR/internal_pc"
 export PKG_CONFIG_PATH="$PKG_GONFIG_PATH:${PKG_DIR}"
-PKG_PREFIX="${ROOT_DIR}/build/${SYS_NAME}"
+PKG_PREFIX="${EXTERNAL_LIBS_DIR}/${SYS_NAME}"
 
 X264_ENABLED=1
 X265_ENABLED=1
@@ -211,19 +216,21 @@ fi
 
 
 #add defines.h to config.h
-line='#include \"../defines.h\"'
-cnt=$(grep -n "$line" $config_file|wc -l)
-#echo $cnt
-#cmd1="grep -n \"$line\" $config_file|wc -l"
-#echo $cmd1
-#eval $cmd1
-if [ $cnt -eq 0 ];then
-    #echo "defines.h will be included by config.h"
-    sed -i '$i'"$line" $config_file 
-elif [ $cnt -eq 1 ];then
-    echo "defines.h has already been included by config.h"
-else
-    echo "WARNING:Too many including of defines.h in config.h, please check"
+if [ -e "defines.h" ];then
+    line='#include \"defines.h\"'
+    cnt=$(grep -n "$line" $config_file|wc -l)
+    #echo $cnt
+    #cmd1="grep -n \"$line\" $config_file|wc -l"
+    #echo $cmd1
+    #eval $cmd1
+    if [ $cnt -eq 0 ];then
+        #echo "defines.h will be included by config.h"
+        sed -i '$i'"$line" $config_file 
+    elif [ $cnt -eq 1 ];then
+        echo "defines.h has already been included by config.h"
+    else
+        echo "WARNING:Too many including of defines.h in config.h, please check"
+    fi
 fi
 
 make
