@@ -10126,15 +10126,7 @@
 			>
 		</File>
 		<File
-			RelativePath="..\source\cmdutils_opencl.c"
-			>
-		</File>
-		<File
 			RelativePath=".\compile.static"
-			>
-		</File>
-		<File
-			RelativePath="..\source\config.asm"
 			>
 		</File>
 		<File
@@ -10154,35 +10146,11 @@
 			>
 		</File>
 		<File
-			RelativePath="..\source\ffmpeg_cuvid.c"
-			>
-		</File>
-		<File
-			RelativePath="..\source\ffmpeg_dxva2.c"
-			>
-		</File>
-		<File
 			RelativePath="..\source\ffmpeg_filter.c"
 			>
 		</File>
 		<File
 			RelativePath="..\source\ffmpeg_opt.c"
-			>
-		</File>
-		<File
-			RelativePath="..\source\ffmpeg_qsv.c"
-			>
-		</File>
-		<File
-			RelativePath="..\source\ffmpeg_vaapi.c"
-			>
-		</File>
-		<File
-			RelativePath="..\source\ffmpeg_vdpau.c"
-			>
-		</File>
-		<File
-			RelativePath="..\source\ffmpeg_videotoolbox.c"
 			>
 		</File>
 		<File
