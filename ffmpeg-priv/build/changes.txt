@@ -9,4 +9,5 @@ ffmpeg.h
 ffmpeg_opt.c
 +glob.c
 +glob.h
+Makefile
 

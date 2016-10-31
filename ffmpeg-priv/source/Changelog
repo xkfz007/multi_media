@@ -1,6 +1,32 @@
 Entries are sorted chronologically from oldest to youngest within each release,
 releases are sorted from youngest to oldest.
 
+version 3.2.S2:
+* update main version to v3.2
+
+version 3.2:
+- libopenmpt demuxer
+- tee protocol
+- Changed metadata print option to accept general urls
+- Alias muxer for Ogg Video (.ogv)
+- VP8 in Ogg muxing
+- curves filter doesn't automatically insert points at x=0 and x=1 anymore
+- 16-bit support in curves filter and selectivecolor filter
+- OpenH264 decoder wrapper
+- MediaCodec H.264/HEVC/MPEG-4/VP8/VP9 hwaccel
+- True Audio (TTA) muxer
+- crystalizer audio filter
+- acrusher audio filter
+- bitplanenoise video filter
+- floating point support in als decoder
+- fifo muxer
+- maskedclamp filter
+- hysteresis filter
+- lut2 filter
+- yuvtestsrc filter
+- CUDA CUVID H.263/VP8/VP9/10 bit HEVC (Dithered) Decoding
+- vaguedenoiser filter
+
 version 3.1.5.S2:
 * update main version to v3.1.5
 
