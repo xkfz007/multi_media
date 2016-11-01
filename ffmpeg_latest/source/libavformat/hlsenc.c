@@ -133,6 +133,39 @@ typedef struct HLSContext {
     double initial_prog_date_time;
 } HLSContext;
 
+static int mkdir_p(const char *path) {
+    int ret = 0;
+    char *temp = av_strdup(path);
+    char *pos = temp;
+    char tmp_ch = '\0';
+
+    if (!path || !temp) {
+        return -1;
+    }
+
+    if (!strncmp(temp, "/", 1) || !strncmp(temp, "\\", 1)) {
+        pos++;
+    } else if (!strncmp(temp, "./", 2) || !strncmp(temp, ".\\", 2)) {
+        pos += 2;
+    }
+
+    for ( ; *pos != '\0'; ++pos) {
+        if (*pos == '/' || *pos == '\\') {
+            tmp_ch = *pos;
+            *pos = '\0';
+            ret = mkdir(temp, 0755);
+            *pos = tmp_ch;
+        }
+    }
+
+    if ((*(pos - 1) != '/') || (*(pos - 1) != '\\')) {
+        ret = mkdir(temp, 0755);
+    }
+
+    av_free(temp);
+    return ret;
+}
+
 static int hls_delete_old_segments(HLSContext *hls) {
 
     HLSSegment *segment, *previous_segment = NULL;
@@ -331,8 +364,7 @@ static int hls_append_segment(struct AVFormatContext *s, HLSContext *hls, double
                               int64_t pos, int64_t size)
 {
     HLSSegment *en = av_malloc(sizeof(*en));
-    char *tmp, *p;
-    const char *pl_dir, *filename;
+    const char  *filename;
     int ret;
 
     if (!en)
@@ -341,19 +373,7 @@ static int hls_append_segment(struct AVFormatContext *s, HLSContext *hls, double
     filename = av_basename(hls->avf->filename);
 
     if (hls->use_localtime_mkdir) {
-        /* Possibly prefix with mkdir'ed subdir, if playlist share same
-         * base path. */
-        tmp = av_strdup(s->filename);
-        if (!tmp) {
-            av_free(en);
-            return AVERROR(ENOMEM);
-        }
-
-        pl_dir = av_dirname(tmp);
-        p = hls->avf->filename;
-        if (strstr(p, pl_dir) == p)
-            filename = hls->avf->filename + strlen(pl_dir) + 1;
-        av_free(tmp);
+        filename = hls->avf->filename;
     }
     av_strlcpy(en->filename, filename, sizeof(en->filename));
 
@@ -496,7 +516,7 @@ static int hls_window(AVFormatContext *s, int last)
     }
 
     if (!use_rename && !warned_non_file++)
-        av_log(s, AV_LOG_ERROR, "Cannot use rename on non file protocol, this may lead to races and temporarly partial files\n");
+        av_log(s, AV_LOG_ERROR, "Cannot use rename on non file protocol, this may lead to races and temporary partial files\n");
 
     set_http_options(&options, hls);
     snprintf(temp_filename, sizeof(temp_filename), use_rename ? "%s.tmp" : "%s", s->filename);
@@ -656,7 +676,7 @@ static int hls_start(AVFormatContext *s)
                     return AVERROR(ENOMEM);
                 }
                 dir = av_dirname(fn_copy);
-                if (mkdir(dir, 0777) == -1 && errno != EEXIST) {
+                if (mkdir_p(dir) == -1 && errno != EEXIST) {
                     av_log(oc, AV_LOG_ERROR, "Could not create directory %s with use_localtime_mkdir\n", dir);
                     av_free(fn_copy);
                     return AVERROR(errno);
@@ -666,7 +686,7 @@ static int hls_start(AVFormatContext *s)
         } else if (av_get_frame_filename2(oc->filename, sizeof(oc->filename),
                                   c->basename, c->wrap ? c->sequence % c->wrap : c->sequence,
                                   AV_FRAME_FILENAME_FLAGS_MULTIPLE) < 0) {
-            av_log(oc, AV_LOG_ERROR, "Invalid segment filename template '%s' you can try use -use_localtime 1 with it\n", c->basename);
+            av_log(oc, AV_LOG_ERROR, "Invalid segment filename template '%s' you can try to use -use_localtime 1 with it\n", c->basename);
             return AVERROR(EINVAL);
         }
         if( c->vtt_basename) {

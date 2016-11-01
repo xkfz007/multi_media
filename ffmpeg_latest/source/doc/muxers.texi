@@ -295,14 +295,14 @@ the loops:
 ffmpeg -i INPUT -loop 10 -final_delay 500 out.gif
 @end example
 
-Note 1: if you wish to extract the frames in separate GIF files, you need to
+Note 1: if you wish to extract the frames into separate GIF files, you need to
 force the @ref{image2} muxer:
 @example
 ffmpeg -i INPUT -c:v gif -f image2 "out%d.gif"
 @end example
 
-Note 2: the GIF format has a very small time base: the delay between two frames
-can not be smaller than one centi second.
+Note 2: the GIF format has a very large time base: the delay between two frames
+can therefore not be smaller than one centi second.
 
 @anchor{hash}
 @section hash
@@ -426,7 +426,7 @@ specified.
 Set the segment filename. Unless @code{hls_flags single_file} is set,
 @var{filename} is used as a string format with the segment number:
 @example
-ffmpeg in.nut -hls_segment_filename 'file%03d.ts' out.m3u8
+ffmpeg -i in.nut -hls_segment_filename 'file%03d.ts' out.m3u8
 @end example
 This example will produce the playlist, @file{out.m3u8}, and segment files:
 @file{file000.ts}, @file{file001.ts}, @file{file002.ts}, etc.
@@ -435,7 +435,7 @@ This example will produce the playlist, @file{out.m3u8}, and segment files:
 Use strftime on @var{filename} to expand the segment filename with localtime.
 The segment number (%d) is not available in this mode.
 @example
-ffmpeg in.nut -use_localtime 1 -hls_segment_filename 'file-%Y%m%d-%s.ts' out.m3u8
+ffmpeg -i in.nut -use_localtime 1 -hls_segment_filename 'file-%Y%m%d-%s.ts' out.m3u8
 @end example
 This example will produce the playlist, @file{out.m3u8}, and segment files:
 @file{file-20160215-1455569023.ts}, @file{file-20160215-1455569024.ts}, etc.
@@ -444,7 +444,7 @@ This example will produce the playlist, @file{out.m3u8}, and segment files:
 Used together with -use_localtime, it will create up to one subdirectory which
 is expanded in @var{filename}.
 @example
-ffmpeg in.nut -use_localtime 1 -use_localtime_mkdir 1 -hls_segment_filename '%Y%m%d/file-%Y%m%d-%s.ts' out.m3u8
+ffmpeg -i in.nut -use_localtime 1 -use_localtime_mkdir 1 -hls_segment_filename '%Y%m%d/file-%Y%m%d-%s.ts' out.m3u8
 @end example
 This example will create a directory 201560215 (if it does not exist), and then
 produce the playlist, @file{out.m3u8}, and segment files:
@@ -884,6 +884,9 @@ the new default-base-is-moof flag instead. This flag is new from
 14496-12:2012. This may make the fragments easier to parse in certain
 circumstances (avoiding basing track fragment location calculations
 on the implicit end of the previous track fragment).
+@item -write_tmcd
+Specify @code{on} to force writing a timecode track, @code{off} to disable it
+and @code{auto} to write a timecode track only for mov and mp4 output (default).
 @end table
 
 @subsection Example
@@ -1434,9 +1437,9 @@ ffmpeg -i in.mkv -codec copy -map 0 -f segment -segment_list out.csv -segment_fr
 
 @item
 Convert the @file{in.mkv} to TS segments using the @code{libx264}
-and @code{libfaac} encoders:
+and @code{aac} encoders:
 @example
-ffmpeg -i in.mkv -map 0 -codec:v libx264 -codec:a libfaac -f ssegment -segment_list out.list out%03d.ts
+ffmpeg -i in.mkv -map 0 -codec:v libx264 -codec:a aac -f ssegment -segment_list out.list out%03d.ts
 @end example
 
 @item
@@ -1510,14 +1513,14 @@ as a list of @var{key}=@var{value} pairs separated by ':'.
 
 @item drop_pkts_on_overflow @var{bool}
 If set to 1 (true), in case the fifo queue fills up, packets will be dropped
-rather than blocking the encoder. This allows to continue streaming without
-delaying the input, at the cost of ommiting part of the stream. By default
+rather than blocking the encoder. This makes it possible to continue streaming without
+delaying the input, at the cost of omitting part of the stream. By default
 this option is set to 0 (false), so in such cases the encoder will be blocked
 until the muxer processes some of the packets and none of them is lost.
 
 @item attempt_recovery @var{bool}
 If failure occurs, attempt to recover the output. This is especially useful
-when used with network output, allows to restart streaming transparently.
+when used with network output, since it makes it possible to restart streaming transparently.
 By default this option is set to 0 (false).
 
 @item max_recovery_attempts

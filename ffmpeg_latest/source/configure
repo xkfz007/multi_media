@@ -108,7 +108,6 @@ Configuration options:
   --enable-gray            enable full grayscale support (slower color)
   --disable-swscale-alpha  disable alpha channel support in swscale
   --disable-all            disable building components, libraries and programs
-  --enable-incompatible-libav-abi enable incompatible Libav fork ABI [no]
   --enable-raise-major     increase major version numbers in sonames [no]
 
 Program options:
@@ -225,7 +224,6 @@ External library support:
                            and libraw1394 [no]
   --enable-libebur128      enable libebur128 for EBU R128 measurement,
                            needed for loudnorm filter [no]
-  --enable-libfaac         enable AAC encoding via libfaac [no]
   --enable-libfdk-aac      enable AAC de/encoding via libfdk-aac [no]
   --enable-libflite        enable flite (voice synthesis) support via libflite [no]
   --enable-libfontconfig   enable libfontconfig, useful for drawtext filter [no]
@@ -985,7 +983,7 @@ check_ld(){
     check_$type $($cflags_filter $flags) || return
     flags=$($ldflags_filter $flags)
     libs=$($ldflags_filter $libs)
-    check_cmd $ld $LDFLAGS $flags $(ld_o $TMPE) $TMPO $libs $extralibs
+    check_cmd $ld $LDFLAGS $LDEXEFLAGS $flags $(ld_o $TMPE) $TMPO $libs $extralibs
 }
 
 print_include(){
@@ -1148,10 +1146,16 @@ check_func_headers(){
         for hdr in $headers; do
             print_include $hdr
         done
+        echo "#include <stdint.h>"
         for func in $funcs; do
             echo "long check_$func(void) { return (long) $func; }"
         done
-        echo "int main(void) { return 0; }"
+        echo "int main(void) { int ret = 0;"
+        # LTO could optimize out the test functions without this
+        for func in $funcs; do
+            echo " ret |= ((intptr_t)check_$func) & 0xFFFF;"
+        done
+        echo "return ret; }"
     } | check_ld "cc" "$@" && enable $funcs && enable_safe $headers
 }
 
@@ -1448,14 +1452,15 @@ COMPONENT_LIST="
 "
 
 EXAMPLE_LIST="
-    avio_reading_example
     avio_dir_cmd_example
+    avio_reading_example
     decoding_encoding_example
     demuxing_decoding_example
     extract_mvs_example
     filter_audio_example
     filtering_audio_example
     filtering_video_example
+    http_multiclient_example
     metadata_example
     muxing_example
     qsvdec_example
@@ -1487,7 +1492,6 @@ EXTERNAL_LIBRARY_LIST="
     libcelt
     libdc1394
     libebur128
-    libfaac
     libfdk_aac
     libflite
     libfontconfig
@@ -1547,6 +1551,7 @@ EXTERNAL_LIBRARY_LIST="
     opengl
     openssl
     schannel
+    sdl
     sdl2
     securetransport
     videotoolbox
@@ -1646,7 +1651,6 @@ CONFIG_LIST="
     $PROGRAM_LIST
     $SUBSYSTEM_LIST
     fontconfig
-    incompatible_libav_abi
     memalign_hack
     memory_poisoning
     neon_clobber_test
@@ -1799,7 +1803,6 @@ HAVE_LIST_CMDLINE="
 HAVE_LIST_PUB="
     bigendian
     fast_unaligned
-    incompatible_libav_abi
 "
 
 HEADERS_LIST="
@@ -2549,7 +2552,6 @@ videotoolbox_hwaccel_deps="videotoolbox pthreads"
 videotoolbox_hwaccel_extralibs="-framework QuartzCore"
 xvmc_deps="X11_extensions_XvMClib_h"
 
-h263_cuvid_hwaccel_deps="cuda cuvid"
 h263_vaapi_hwaccel_deps="vaapi"
 h263_vaapi_hwaccel_select="h263_decoder"
 h263_videotoolbox_hwaccel_deps="videotoolbox"
@@ -2630,6 +2632,8 @@ mpeg2_xvmc_hwaccel_deps="xvmc"
 mpeg2_xvmc_hwaccel_select="mpeg2video_decoder"
 mpeg4_crystalhd_decoder_select="crystalhd"
 mpeg4_cuvid_hwaccel_deps="cuda cuvid"
+mpeg4_mediacodec_decoder_deps="mediacodec"
+mpeg4_mediacodec_hwaccel_deps="mediacodec"
 mpeg4_mmal_decoder_deps="mmal"
 mpeg4_mmal_decoder_select="mmal"
 mpeg4_mmal_hwaccel_deps="mmal"
@@ -2662,10 +2666,14 @@ vc1_vdpau_hwaccel_deps="vdpau"
 vc1_vdpau_hwaccel_select="vc1_decoder"
 vp8_cuvid_hwaccel_deps="cuda cuvid"
 vp9_cuvid_hwaccel_deps="cuda cuvid"
+vp8_mediacodec_decoder_deps="mediacodec"
+vp8_mediacodec_hwaccel_deps="mediacodec"
 vp9_d3d11va_hwaccel_deps="d3d11va DXVA_PicParams_VP9"
 vp9_d3d11va_hwaccel_select="vp9_decoder"
 vp9_dxva2_hwaccel_deps="dxva2 DXVA_PicParams_VP9"
 vp9_dxva2_hwaccel_select="vp9_decoder"
+vp9_mediacodec_decoder_deps="mediacodec"
+vp9_mediacodec_hwaccel_deps="mediacodec"
 vp9_vaapi_hwaccel_deps="vaapi VADecPictureParameterBufferVP9"
 vp9_vaapi_hwaccel_select="vp9_decoder"
 wmv3_crystalhd_decoder_select="crystalhd"
@@ -2687,8 +2695,6 @@ scale_npp_filter_deps="cuda libnpp"
 
 nvenc_deps_any="dlopen LoadLibrary"
 nvenc_encoder_deps="nvenc"
-h263_cuvid_decoder_deps="cuda cuvid"
-h263_cuvid_decoder_select="h263_cuvid_hwaccel"
 h264_cuvid_decoder_deps="cuda cuvid"
 h264_cuvid_decoder_select="h264_mp4toannexb_bsf h264_cuvid_hwaccel"
 h264_nvenc_encoder_deps="nvenc"
@@ -2771,8 +2777,6 @@ pcm_mulaw_at_encoder_select="audio_frame_queue"
 chromaprint_muxer_deps="chromaprint"
 h264_videotoolbox_encoder_deps="videotoolbox_encoder pthreads"
 libcelt_decoder_deps="libcelt"
-libfaac_encoder_deps="libfaac"
-libfaac_encoder_select="audio_frame_queue"
 libfdk_aac_decoder_deps="libfdk_aac"
 libfdk_aac_encoder_deps="libfdk_aac"
 libfdk_aac_encoder_select="audio_frame_queue"
@@ -3104,15 +3108,15 @@ zscale_filter_deps="libzimg"
 scale_vaapi_filter_deps="vaapi VAProcPipelineParameterBuffer"
 
 # examples
-avcodec_example_deps="avcodec avutil"
-avio_dir_cmd="avformat avutil"
-avio_reading="avformat avcodec avutil"
+avio_dir_cmd_deps="avformat avutil"
+avio_reading_deps="avformat avcodec avutil"
 decoding_encoding_example_deps="avcodec avformat avutil"
 demuxing_decoding_example_deps="avcodec avformat avutil"
 extract_mvs_example_deps="avcodec avformat avutil"
 filter_audio_example_deps="avfilter avutil"
 filtering_audio_example_deps="avfilter avcodec avformat avutil"
 filtering_video_example_deps="avfilter avcodec avformat avutil"
+http_multiclient_example_deps="avformat avutil fork"
 metadata_example_deps="avformat avutil"
 muxing_example_deps="avcodec avformat avutil swscale"
 qsvdec_example_deps="avcodec avutil libmfx h264_qsv_decoder vaapi_x11"
@@ -3577,6 +3581,8 @@ case "$toolchain" in
         add_cppflags -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=2
         add_cflags   -fno-strict-overflow -fstack-protector-all
         add_ldflags  -Wl,-z,relro -Wl,-z,now
+        add_cflags   -fPIE
+        add_ldexeflags -fPIE -pie
     ;;
     ?*)
         die "Unknown toolchain $toolchain"
@@ -4382,6 +4388,9 @@ elif enabled mips; then
                 enable fast_cmov
                 enable fast_unaligned
                 disable aligned_stack
+                disable mipsfpu
+                disable mipsdsp
+                disable mipsdspr2
                 case $cpu in
                     loongson3*)
                         cpuflags="-march=loongson3a -mhard-float -fno-expensive-optimizations"
@@ -4707,6 +4716,8 @@ case $target_os in
             { check_cflags -mdynamic-no-pic && add_asflags -mdynamic-no-pic; }
         check_header dispatch/dispatch.h &&
             add_cppflags '-I\$(SRC_PATH)/compat/dispatch_semaphore'
+        version_script='-exported_symbols_list'
+        VERSION_SCRIPT_POSTPROCESS_CMD='tr " " "\n" | sed -n /global:/,/local:/p | grep ";" | tr ";" "\n" | sed -E "s/(.+)/_\1/g" | sed -E "s/(.+[^*])$$$$/\1*/"'
         ;;
     msys*)
         die "Native MSYS builds are discouraged, please use the MINGW environment."
@@ -4804,6 +4815,7 @@ case $target_os in
         objformat="win32"
         enable dos_paths
         enabled shared && ! enabled small && check_cmd $windres --version && enable gnu_windres
+        add_cppflags -D_POSIX_C_SOURCE=200112 -D_XOPEN_SOURCE=600
         ;;
     *-dos|freedos|opendos)
         network_extralibs="-lsocket"
@@ -5070,7 +5082,6 @@ die_license_disabled gpl x11grab
 
 die_license_disabled nonfree cuda
 die_license_disabled nonfree cuvid
-die_license_disabled nonfree libfaac
 die_license_disabled nonfree libnpp
 enabled gpl && die_license_disabled_gpl nonfree libfdk_aac
 enabled gpl && die_license_disabled_gpl nonfree openssl
@@ -5680,7 +5691,6 @@ enabled libcelt           && require libcelt celt/celt.h celt_decode -lcelt0 &&
                                die "ERROR: libcelt must be installed and version must be >= 0.11.0."; }
 enabled libcaca           && require_pkg_config caca caca.h caca_create_canvas
 enabled libebur128        && require ebur128 ebur128.h ebur128_relative_threshold -lebur128
-enabled libfaac           && require2 libfaac "stdint.h faac.h" faacEncGetVersion -lfaac
 enabled libfdk_aac        && { use_pkg_config fdk-aac "fdk-aac/aacenc_lib.h" aacEncOpen ||
                                { require libfdk_aac fdk-aac/aacenc_lib.h aacEncOpen -lfdk-aac &&
                                  warn "using libfdk without pkg-config"; } }
@@ -5708,10 +5718,11 @@ enabled libopencv         && { check_header opencv2/core/core_c.h &&
                                  require opencv opencv2/core/core_c.h cvCreateImageHeader -lopencv_core -lopencv_imgproc; } ||
                                require_pkg_config opencv opencv/cxcore.h cvCreateImageHeader; }
 enabled libopenh264       && require_pkg_config openh264 wels/codec_api.h WelsGetCodecVersion
-enabled libopenjpeg       && { check_lib openjpeg-2.1/openjpeg.h opj_version -lopenjp2 -DOPJ_STATIC ||
-                               check_lib openjpeg-2.0/openjpeg.h opj_version -lopenjp2 -DOPJ_STATIC ||
-                               check_lib openjpeg-1.5/openjpeg.h opj_version -lopenjpeg -DOPJ_STATIC ||
-                               check_lib openjpeg.h opj_version -lopenjpeg -DOPJ_STATIC ||
+enabled libopenjpeg       && { { check_lib2 openjpeg-2.1/openjpeg.h opj_version -lopenjp2 -DOPJ_STATIC && add_cppflags -DOPJ_STATIC; } ||
+                               check_lib2 openjpeg-2.1/openjpeg.h opj_version -lopenjp2 ||
+                               { check_lib2 openjpeg-2.0/openjpeg.h opj_version -lopenjp2 -DOPJ_STATIC && add_cppflags -DOPJ_STATIC; } ||
+                               { check_lib2 openjpeg-1.5/openjpeg.h opj_version -lopenjpeg -DOPJ_STATIC && add_cppflags -DOPJ_STATIC; } ||
+                               { check_lib2 openjpeg.h opj_version -lopenjpeg -DOPJ_STATIC && add_cppflags -DOPJ_STATIC; } ||
                                die "ERROR: libopenjpeg not found"; }
 enabled libopenmpt        && require_pkg_config "libopenmpt >= 0.2.6557" libopenmpt/libopenmpt.h openmpt_module_create
 enabled libopus           && require_pkg_config opus opus_multistream.h opus_multistream_decoder_create
@@ -5817,7 +5828,8 @@ enabled omx               && { check_header OMX_Core.h ||
                                     add_cflags -isystem/opt/vc/include/IL ; }
                                 check_header OMX_Core.h ; } ||
                                die "ERROR: OpenMAX IL headers not found"; }
-enabled openssl           && { use_pkg_config openssl openssl/ssl.h SSL_library_init ||
+enabled openssl           && { use_pkg_config openssl openssl/ssl.h OPENSSL_init_ssl ||
+                               use_pkg_config openssl openssl/ssl.h SSL_library_init ||
                                check_lib openssl/ssl.h SSL_library_init -lssl -lcrypto ||
                                check_lib openssl/ssl.h SSL_library_init -lssl32 -leay32 ||
                                check_lib openssl/ssl.h SSL_library_init -lssl -lcrypto -lws2_32 -lgdi32 ||
@@ -5846,6 +5858,7 @@ if enabled gcrypt; then
     fi
 fi
 
+disabled sdl && disable sdl2
 if ! disabled sdl2; then
     SDL2_CONFIG="${cross_prefix}sdl2-config"
     if check_pkg_config sdl2 SDL_events.h SDL_PollEvent; then
@@ -6076,6 +6089,8 @@ enabled neon_clobber_test &&
                   -Wl,--wrap,avcodec_encode_video2      \
                   -Wl,--wrap,avcodec_send_packet        \
                   -Wl,--wrap,avcodec_receive_frame      \
+                  -Wl,--wrap,avcodec_send_frame         \
+                  -Wl,--wrap,avcodec_receive_packet     \
                   -Wl,--wrap,avcodec_encode_subtitle    \
                   -Wl,--wrap,swr_convert                \
                   -Wl,--wrap,avresample_convert ||
@@ -6091,6 +6106,8 @@ enabled xmm_clobber_test &&
                   -Wl,--wrap,avcodec_encode_subtitle    \
                   -Wl,--wrap,avcodec_send_packet        \
                   -Wl,--wrap,avcodec_receive_frame      \
+                  -Wl,--wrap,avcodec_send_frame         \
+                  -Wl,--wrap,avcodec_receive_packet     \
                   -Wl,--wrap,swr_convert                \
                   -Wl,--wrap,avresample_convert         \
                   -Wl,--wrap,sws_scale ||
@@ -6198,6 +6215,7 @@ elif enabled llvm_gcc; then
     check_cflags -mllvm -stack-alignment=16
 elif enabled clang; then
     check_cflags -mllvm -stack-alignment=16
+    check_cflags -mstack-alignment=16
     check_cflags -Qunused-arguments
     check_cflags -Werror=implicit-function-declaration
     check_cflags -Werror=missing-prototypes
@@ -6798,7 +6816,7 @@ EOF
 mkdir -p doc/examples/pc-uninstalled
 includedir=${source_path}
 [ "$includedir" = . ] && includedir="\${pcfiledir}/../../.."
-    cat <<EOF > doc/examples/pc-uninstalled/$name.pc
+    cat <<EOF > doc/examples/pc-uninstalled/${name}-uninstalled.pc
 prefix=
 exec_prefix=
 libdir=\${pcfiledir}/../../../$name
