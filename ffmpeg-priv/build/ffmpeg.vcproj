@@ -2,9 +2,9 @@
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="9.00"
-	Name="ffmpeg-priv"
+	Name="ffmpeg"
 	ProjectGUID="{DC895068-3077-4269-A30E-6EB01ACEE18C}"
-	RootNamespace="ffmpeg-priv"
+	RootNamespace="ffmpeg"
 	Keyword="Win32Proj"
 	TargetFrameworkVersion="196613"
 	>
@@ -10126,10 +10126,6 @@
 			>
 		</File>
 		<File
-			RelativePath=".\compile.static"
-			>
-		</File>
-		<File
 			RelativePath=".\config.h"
 			>
 		</File>
@@ -10151,26 +10147,6 @@
 		</File>
 		<File
 			RelativePath="..\source\ffmpeg_opt.c"
-			>
-		</File>
-		<File
-			RelativePath="..\source\ffplay.c"
-			>
-		</File>
-		<File
-			RelativePath="..\source\ffprobe.c"
-			>
-		</File>
-		<File
-			RelativePath="..\source\ffserver.c"
-			>
-		</File>
-		<File
-			RelativePath="..\source\ffserver_config.c"
-			>
-		</File>
-		<File
-			RelativePath="..\source\ffserver_config.h"
 			>
 		</File>
 		<File
