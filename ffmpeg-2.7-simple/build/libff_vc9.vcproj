@@ -18,8 +18,8 @@
 	<Configurations>
 		<Configuration
 			Name="Debug|Win32"
-			OutputDirectory="$(SolutionDir)..\bin\vc9\$(ConfigurationName)"
-			IntermediateDirectory="$(SolutionDir)vc9\$(ConfigurationName)"
+			OutputDirectory="$(SolutionDir)..\bin\$(ConfigurationName)"
+			IntermediateDirectory="$(SolutionDir)$(ConfigurationName)"
 			ConfigurationType="2"
 			CharacterSet="1"
 			>
@@ -41,7 +41,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..;..\include;..\include\x264;..\include\xvid;..\include\SDL;..\include\x265"
+				AdditionalIncludeDirectories="..;..\include"
 				PreprocessorDefinitions="WIN32;_DEBUG;_CONSOLE;DEBUG;_WIN32;HAVE_AV_CONFIG_H;strtoll=_strtoi64;EOVERFLOW=EFBIG"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -62,7 +62,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="..\lib\libxvidcore.lib ..\lib\libx264.lib ..\lib\SDL.lib ..\lib\libx265.lib"
+				AdditionalDependencies=""
 				LinkIncremental="1"
 				ModuleDefinitionFile="..\ffmpeg.def"
 				GenerateDebugInformation="true"
@@ -95,8 +95,8 @@
 		</Configuration>
 		<Configuration
 			Name="Release|Win32"
-			OutputDirectory="$(SolutionDir)..\bin\vc9\$(ConfigurationName)"
-			IntermediateDirectory="$(SolutionDir)vc9\$(ConfigurationName)"
+			OutputDirectory="$(SolutionDir)..\bin\$(ConfigurationName)"
+			IntermediateDirectory="$(SolutionDir)$(ConfigurationName)"
 			ConfigurationType="2"
 			CharacterSet="1"
 			WholeProgramOptimization="1"
@@ -705,10 +705,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\libavutil\fixed_dsp.c"
-				>
-			</File>
-			<File
 				RelativePath="..\libavutil\float_dsp.c"
 				>
 			</File>
@@ -746,10 +742,6 @@
 			</File>
 			<File
 				RelativePath="..\libavutil\log2_tab.c"
-				>
-			</File>
-			<File
-				RelativePath="..\libavutil\lzo.c"
 				>
 			</File>
 			<File
@@ -832,10 +824,6 @@
 				RelativePath="..\libavutil\utils.c"
 				>
 			</File>
-			<File
-				RelativePath="..\libavutil\xga_font_data.c"
-				>
-			</File>
 		</Filter>
 		<Filter
 			Name="libswscale"
@@ -861,7 +849,19 @@
 				>
 			</File>
 			<File
+				RelativePath="..\libswscale\rgb2rgb.h"
+				>
+			</File>
+			<File
 				RelativePath="..\libswscale\swscale.c"
+				>
+			</File>
+			<File
+				RelativePath="..\libswscale\swscale.h"
+				>
+			</File>
+			<File
+				RelativePath="..\libswscale\swscale_internal.h"
 				>
 			</File>
 			<File
@@ -870,6 +870,10 @@
 			</File>
 			<File
 				RelativePath="..\libswscale\utils.c"
+				>
+			</File>
+			<File
+				RelativePath="..\libswscale\version.h"
 				>
 			</File>
 			<File
@@ -918,10 +922,6 @@
 			</File>
 			<File
 				RelativePath="..\libavdevice\lavfi.c"
-				>
-			</File>
-			<File
-				RelativePath="..\libavdevice\sdl.c"
 				>
 			</File>
 			<File
@@ -1046,10 +1046,6 @@
 			</File>
 			<File
 				RelativePath="..\libavcodec\dct.c"
-				>
-			</File>
-			<File
-				RelativePath="..\libavcodec\dct32_fixed.c"
 				>
 			</File>
 			<File
@@ -1237,19 +1233,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\libavcodec\libx264.c"
-				>
-			</File>
-			<File
-				RelativePath="..\libavcodec\libx265.c"
-				>
-			</File>
-			<File
 				RelativePath="..\libavcodec\lpc.c"
-				>
-			</File>
-			<File
-				RelativePath="..\libavcodec\lsp.c"
 				>
 			</File>
 			<File
@@ -1334,14 +1318,6 @@
 			</File>
 			<File
 				RelativePath="..\libavcodec\rdft.c"
-				>
-			</File>
-			<File
-				RelativePath="..\libavcodec\resample.c"
-				>
-			</File>
-			<File
-				RelativePath="..\libavcodec\resample2.c"
 				>
 			</File>
 			<File

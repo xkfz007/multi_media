@@ -88,9 +88,9 @@ void avcodec_register_all(void)
     //REGISTER_ENCDEC (ASS,               ass);
 
     /* external libraries */
-    REGISTER_ENCODER(LIBX264,           libx264);
-    REGISTER_ENCODER(LIBX264RGB,        libx264rgb);
-    REGISTER_ENCODER(LIBX265,           libx265);
+    //REGISTER_ENCODER(LIBX264,           libx264);
+    //REGISTER_ENCODER(LIBX264RGB,        libx264rgb);
+    //REGISTER_ENCODER(LIBX265,           libx265);
 
     /* parsers */
     REGISTER_PARSER(AAC,                aac);

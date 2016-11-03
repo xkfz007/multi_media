@@ -23,7 +23,7 @@
 
 #if CONFIG_PIXELUTILS
 
-#include "x86/pixelutils.h"
+//#include "x86/pixelutils.h"
 
 static av_always_inline int sad_wxh(const uint8_t *src1, ptrdiff_t stride1,
                                     const uint8_t *src2, ptrdiff_t stride2,

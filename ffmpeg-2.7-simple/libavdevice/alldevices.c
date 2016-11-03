@@ -47,5 +47,5 @@ void avdevice_register_all(void)
 
     /* devices */
     REGISTER_INDEV   (LAVFI,            lavfi);
-    REGISTER_OUTDEV  (SDL,              sdl);
+    //REGISTER_OUTDEV  (SDL,              sdl);
 }
