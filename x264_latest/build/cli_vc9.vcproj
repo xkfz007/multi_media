@@ -41,7 +41,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\;..\extras"
+				AdditionalIncludeDirectories="..\source\;..\source\extras;."
 				PreprocessorDefinitions="WIN32;_DEBUG;_CONSOLE;HAVE_CONFIG_H;X264_API_IMPORTS"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -119,7 +119,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="2"
 				EnableIntrinsicFunctions="true"
-				AdditionalIncludeDirectories="..\;..\extras"
+				AdditionalIncludeDirectories="..\source\;..\extras"
 				PreprocessorDefinitions="WIN32;NDEBUG;_CONSOLE;HAVE_CONFIG_H;X264_API_IMPORTS"
 				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="true"
@@ -139,7 +139,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="..\bin\vc9\$(ConfigurationName)\libx264_vc9.lib"
+				AdditionalDependencies="..\source\bin\vc9\$(ConfigurationName)\libx264_vc9.lib"
 				LinkIncremental="1"
 				GenerateDebugInformation="true"
 				ProgramDatabaseFile="$(OutDir)\$(TargetName).pdb"
@@ -179,35 +179,35 @@
 			Name="extra"
 			>
 			<File
-				RelativePath="..\extras\avisynth_c.h"
+				RelativePath="..\source\extras\avisynth_c.h"
 				>
 			</File>
 			<File
-				RelativePath="..\extras\avxsynth_c.h"
+				RelativePath="..\source\extras\avxsynth_c.h"
 				>
 			</File>
 			<File
-				RelativePath="..\extras\cl.h"
+				RelativePath="..\source\extras\cl.h"
 				>
 			</File>
 			<File
-				RelativePath="..\extras\cl_platform.h"
+				RelativePath="..\source\extras\cl_platform.h"
 				>
 			</File>
 			<File
-				RelativePath="..\extras\getopt.c"
+				RelativePath="..\source\extras\getopt.c"
 				>
 			</File>
 			<File
-				RelativePath="..\extras\getopt.h"
+				RelativePath="..\source\extras\getopt.h"
 				>
 			</File>
 			<File
-				RelativePath="..\extras\inttypes.h"
+				RelativePath="..\source\extras\inttypes.h"
 				>
 			</File>
 			<File
-				RelativePath="..\extras\stdint.h"
+				RelativePath="..\source\extras\stdint.h"
 				>
 			</File>
 		</Filter>
@@ -215,58 +215,58 @@
 			Name="filters"
 			>
 			<File
-				RelativePath="..\filters\filters.c"
+				RelativePath="..\source\filters\filters.c"
 				>
 			</File>
 			<File
-				RelativePath="..\filters\filters.h"
+				RelativePath="..\source\filters\filters.h"
 				>
 			</File>
 			<Filter
 				Name="video"
 				>
 				<File
-					RelativePath="..\filters\video\cache.c"
+					RelativePath="..\source\filters\video\cache.c"
 					>
 				</File>
 				<File
-					RelativePath="..\filters\video\crop.c"
+					RelativePath="..\source\filters\video\crop.c"
 					>
 				</File>
 				<File
-					RelativePath="..\filters\video\depth.c"
+					RelativePath="..\source\filters\video\depth.c"
 					>
 				</File>
 				<File
-					RelativePath="..\filters\video\fix_vfr_pts.c"
+					RelativePath="..\source\filters\video\fix_vfr_pts.c"
 					>
 				</File>
 				<File
-					RelativePath="..\filters\video\internal.c"
+					RelativePath="..\source\filters\video\internal.c"
 					>
 				</File>
 				<File
-					RelativePath="..\filters\video\internal.h"
+					RelativePath="..\source\filters\video\internal.h"
 					>
 				</File>
 				<File
-					RelativePath="..\filters\video\resize.c"
+					RelativePath="..\source\filters\video\resize.c"
 					>
 				</File>
 				<File
-					RelativePath="..\filters\video\select_every.c"
+					RelativePath="..\source\filters\video\select_every.c"
 					>
 				</File>
 				<File
-					RelativePath="..\filters\video\source.c"
+					RelativePath="..\source\filters\video\source.c"
 					>
 				</File>
 				<File
-					RelativePath="..\filters\video\video.c"
+					RelativePath="..\source\filters\video\video.c"
 					>
 				</File>
 				<File
-					RelativePath="..\filters\video\video.h"
+					RelativePath="..\source\filters\video\video.h"
 					>
 				</File>
 			</Filter>
@@ -275,31 +275,31 @@
 			Name="input"
 			>
 			<File
-				RelativePath="..\input\avs.c"
+				RelativePath="..\source\input\avs.c"
 				>
 			</File>
 			<File
-				RelativePath="..\input\input.c"
+				RelativePath="..\source\input\input.c"
 				>
 			</File>
 			<File
-				RelativePath="..\input\input.h"
+				RelativePath="..\source\input\input.h"
 				>
 			</File>
 			<File
-				RelativePath="..\input\raw.c"
+				RelativePath="..\source\input\raw.c"
 				>
 			</File>
 			<File
-				RelativePath="..\input\thread.c"
+				RelativePath="..\source\input\thread.c"
 				>
 			</File>
 			<File
-				RelativePath="..\input\timecode.c"
+				RelativePath="..\source\input\timecode.c"
 				>
 			</File>
 			<File
-				RelativePath="..\input\y4m.c"
+				RelativePath="..\source\input\y4m.c"
 				>
 			</File>
 		</Filter>
@@ -307,56 +307,56 @@
 			Name="output"
 			>
 			<File
-				RelativePath="..\output\flv.c"
+				RelativePath="..\source\output\flv.c"
 				>
 			</File>
 			<File
-				RelativePath="..\output\flv_bytestream.c"
+				RelativePath="..\source\output\flv_bytestream.c"
 				>
 			</File>
 			<File
-				RelativePath="..\output\flv_bytestream.h"
+				RelativePath="..\source\output\flv_bytestream.h"
 				>
 			</File>
 			<File
-				RelativePath="..\output\matroska.c"
+				RelativePath="..\source\output\matroska.c"
 				>
 			</File>
 			<File
-				RelativePath="..\output\matroska_ebml.c"
+				RelativePath="..\source\output\matroska_ebml.c"
 				>
 			</File>
 			<File
-				RelativePath="..\output\matroska_ebml.h"
+				RelativePath="..\source\output\matroska_ebml.h"
 				>
 			</File>
 			<File
-				RelativePath="..\output\output.h"
+				RelativePath="..\source\output\output.h"
 				>
 			</File>
 			<File
-				RelativePath="..\output\raw.c"
+				RelativePath="..\source\output\raw.c"
 				>
 			</File>
 		</Filter>
 		<File
-			RelativePath="..\config.h"
+			RelativePath=".\config.h"
 			>
 		</File>
 		<File
-			RelativePath="..\x264.c"
+			RelativePath="..\source\x264.c"
 			>
 		</File>
 		<File
-			RelativePath="..\x264.h"
+			RelativePath="..\source\x264.h"
 			>
 		</File>
 		<File
-			RelativePath="..\x264_config.h"
+			RelativePath=".\x264_config.h"
 			>
 		</File>
 		<File
-			RelativePath="..\x264cli.h"
+			RelativePath="..\source\x264cli.h"
 			>
 		</File>
 	</Files>
