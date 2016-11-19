@@ -291,6 +291,8 @@ static int write_option(void *optctx, const OptionDef *po, const char *opt,
 {
     /* new-style options contain an offset into optctx, old-style address of
      * a global var*/
+     //+:OPT_OFFSET and OPT_SPEC imply this is an new-style option
+     //+:and u.off is used. Or u.dst_ptr is used to store option argument
     void *dst = po->flags & (OPT_OFFSET | OPT_SPEC) ?
                 (uint8_t *)optctx + po->u.off : po->u.dst_ptr;
     int *dstcount;
@@ -405,6 +407,8 @@ void parse_options(void *optctx, int argc, char **argv, const OptionDef *options
     }
 }
 
+//+:parse a option group: global options, inputfile options, outputfile options
+//+:called by ffmpeg_parse_options and openfiles
 int parse_optgroup(void *optctx, OptionGroup *g)
 {
     int i, ret;
@@ -437,21 +441,21 @@ int parse_optgroup(void *optctx, OptionGroup *g)
 
     return 0;
 }
-
+//+:mainly used to locate options like: -loglevel(-v)£¬-report £¬-hide_banner, -version
 int locate_option(int argc, char **argv, const OptionDef *options,
                   const char *optname)
 {
     const OptionDef *po;
     int i;
 
-    for (i = 1; i < argc; i++) {
+    for (i = 1; i < argc; i++) {//+:traverse all the args
         const char *cur_opt = argv[i];
 
         if (*cur_opt++ != '-')
             continue;
 
         po = find_option(options, cur_opt);
-        if (!po->name && cur_opt[0] == 'n' && cur_opt[1] == 'o')
+        if (!po->name && cur_opt[0] == 'n' && cur_opt[1] == 'o')//+:no-opt is supported for bool options
             po = find_option(options, cur_opt + 2);
 
         if ((!po->name && !strcmp(cur_opt, optname)) ||
