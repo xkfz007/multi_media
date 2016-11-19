@@ -1,0 +1,162 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="common">
+      <UniqueIdentifier>{e9eeb205-e531-41f8-b594-3c8911c71217}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="encoder">
+      <UniqueIdentifier>{cfd43453-12b6-4c4e-bb78-2fa926eb0211}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\common\bitstream.c">
+      <Filter>common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\common\win32thread.c">
+      <Filter>common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\common\cabac.c">
+      <Filter>common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\common\common.c">
+      <Filter>common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\common\cpu.c">
+      <Filter>common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\common\dct.c">
+      <Filter>common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\common\deblock.c">
+      <Filter>common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\common\frame.c">
+      <Filter>common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\common\macroblock.c">
+      <Filter>common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\common\mc.c">
+      <Filter>common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\common\mvpred.c">
+      <Filter>common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\common\osdep.c">
+      <Filter>common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\common\pixel.c">
+      <Filter>common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\common\predict.c">
+      <Filter>common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\common\quant.c">
+      <Filter>common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\common\rectangle.c">
+      <Filter>common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\common\set.c">
+      <Filter>common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\common\threadpool.c">
+      <Filter>common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\common\vlc.c">
+      <Filter>common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\encoder\set.c">
+      <Filter>encoder</Filter>
+    </ClCompile>
+    <ClCompile Include="..\encoder\analyse.c">
+      <Filter>encoder</Filter>
+    </ClCompile>
+    <ClCompile Include="..\encoder\cabac.c">
+      <Filter>encoder</Filter>
+    </ClCompile>
+    <ClCompile Include="..\encoder\cavlc.c">
+      <Filter>encoder</Filter>
+    </ClCompile>
+    <ClCompile Include="..\encoder\encoder.c">
+      <Filter>encoder</Filter>
+    </ClCompile>
+    <ClCompile Include="..\encoder\lookahead.c">
+      <Filter>encoder</Filter>
+    </ClCompile>
+    <ClCompile Include="..\encoder\macroblock.c">
+      <Filter>encoder</Filter>
+    </ClCompile>
+    <ClCompile Include="..\encoder\me.c">
+      <Filter>encoder</Filter>
+    </ClCompile>
+    <ClCompile Include="..\encoder\ratecontrol.c">
+      <Filter>encoder</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\common\bitstream.h">
+      <Filter>common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\common\cabac.h">
+      <Filter>common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\common\common.h">
+      <Filter>common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\common\cpu.h">
+      <Filter>common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\common\frame.h">
+      <Filter>common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\common\macroblock.h">
+      <Filter>common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\common\mc.h">
+      <Filter>common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\common\osdep.h">
+      <Filter>common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\common\pixel.h">
+      <Filter>common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\common\predict.h">
+      <Filter>common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\common\quant.h">
+      <Filter>common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\common\rectangle.h">
+      <Filter>common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\common\set.h">
+      <Filter>common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\common\threadpool.h">
+      <Filter>common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\common\win32thread.h">
+      <Filter>common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\encoder\analyse.h">
+      <Filter>encoder</Filter>
+    </ClInclude>
+    <ClInclude Include="..\encoder\macroblock.h">
+      <Filter>encoder</Filter>
+    </ClInclude>
+    <ClInclude Include="..\encoder\me.h">
+      <Filter>encoder</Filter>
+    </ClInclude>
+    <ClInclude Include="..\encoder\ratecontrol.h">
+      <Filter>encoder</Filter>
+    </ClInclude>
+    <ClInclude Include="..\encoder\set.h">
+      <Filter>encoder</Filter>
+    </ClInclude>
+    <ClInclude Include="..\common\dct.h">
+      <Filter>common</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>
