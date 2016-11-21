@@ -34,5 +34,6 @@
 #define HAVE_STRING_H 1
 #define HAVE_AS_FUNC 0
 #define HAVE_INTEL_DISPATCHER 0
+#include "defines.h"
 //#define X264_API_IMPORTS
 
