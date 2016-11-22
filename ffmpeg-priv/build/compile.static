@@ -1,6 +1,12 @@
 #!/bin/bash
 #set -e
 set -x
+add_x(){
+    file=$1
+    if [ ! -x $file ];then
+        chmod u+x $file
+    fi
+}
 
 #check system
 sys=$(uname -o)
@@ -100,12 +106,8 @@ if [ $FREETYPE_ENABLED = "1" ];then
     pkgconfig_generate freetype2  "$PKG_DIR" "$PKG_INTERNAL" "$PKG_PREFIX"
 fi
 
-if [ ! -x ${SOURCE_DIR}/configure ];then
-    chmod u+x ${SOURCE_DIR}/configure
-fi
-if [ ! -x ${SOURCE_DIR}/version.sh ];then
-    chmod u+x ${SOURCE_DIR}/version.sh
-fi
+add_x ${SOURCE_DIR}/configure
+add_x ${SOURCE_DIR}/version.sh
 
 BUILDS_DIR="${ROOT_DIR}/build/$CONF"
 if [ ! -e $BUILDS_DIR ];then
@@ -215,8 +217,9 @@ fi
 
 
 #add defines.h to config.h
-if [ -e "defines.h" ];then
-    line='#include \"defines.h\"'
+def_file="defines.h"
+if [ -e "$def_file" ];then
+    line="#include \"$def_file\""
     cnt=$(grep -n "$line" $config_file|wc -l)
     #echo $cnt
     #cmd1="grep -n \"$line\" $config_file|wc -l"

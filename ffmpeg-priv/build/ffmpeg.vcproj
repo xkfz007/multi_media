@@ -7617,10 +7617,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\source\libavformat\hlsplusenc.c"
-				>
-			</File>
-			<File
 				RelativePath="..\source\libavformat\hlsproto.c"
 				>
 			</File>
