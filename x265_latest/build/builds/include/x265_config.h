@@ -2,7 +2,6 @@
  * Copyright (C) 2013 x265 project
  *
  * Authors: Steve Borho <steve@borho.org>
- *          Min Chen <chenm003@163.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,36 +21,14 @@
  * For more information, contact us at license @ x265.com.
  *****************************************************************************/
 
-#ifndef X265_REFERENCE_H
-#define X265_REFERENCE_H
+#ifndef X265_CONFIG_H
+#define X265_CONFIG_H
 
-#include "primitives.h"
-#include "picyuv.h"
-#include "lowres.h"
-#include "mv.h"
+/* Defines generated at build time */
 
-namespace X265_NS {
-// private x265 namespace
+/* Incremented each time public API is changed, X265_BUILD is used as
+ * the shared library SONAME on platforms which support it. It also
+ * prevents linking against a different version of the static lib */
+#define X265_BUILD 95
 
-struct WeightParam;
-
-class MotionReference : public ReferencePlanes
-{
-public:
-
-    MotionReference();
-    ~MotionReference();
-    int  init(PicYuv*, WeightParam* wp, const x265_param& p);
-    void applyWeight(uint32_t finishedRows, uint32_t maxNumRows, uint32_t maxNumRowsInSlice, uint32_t sliceId);
-
-    pixel*      weightBuffer[3];
-    int         numInterpPlanes;
-    uint32_t*   numSliceWeightedRows;
-
-protected:
-
-    MotionReference& operator =(const MotionReference&);
-};
-}
-
-#endif // ifndef X265_REFERENCE_H
+#endif
