@@ -1,0 +1,24 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 10.00
+# Visual Studio 2008
+Project("{EAF909A5-FA59-4C3D-9431-0FCC20D5BCF9}") = "xyuv_player", "xyuv_player.icproj", "{239B5911-F4F2-4897-B19D-5263922641C9}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Release|Win32 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{239B5911-F4F2-4897-B19D-5263922641C9}.Debug|Win32.ActiveCfg = Debug|Win32
+		{239B5911-F4F2-4897-B19D-5263922641C9}.Debug|Win32.Build.0 = Debug|Win32
+		{239B5911-F4F2-4897-B19D-5263922641C9}.Release|Win32.ActiveCfg = Release|Win32
+		{239B5911-F4F2-4897-B19D-5263922641C9}.Release|Win32.Build.0 = Release|Win32
+		{B3D8967E-1227-41E4-933F-67B4EE0C67BE}.Release|Win32.Build.0 = Release|Win32
+		{B3D8967E-1227-41E4-933F-67B4EE0C67BE}.Release|Win32.ActiveCfg = Release|Win32
+		{B3D8967E-1227-41E4-933F-67B4EE0C67BE}.Debug|Win32.Build.0 = Debug|Win32
+		{B3D8967E-1227-41E4-933F-67B4EE0C67BE}.Debug|Win32.ActiveCfg = Debug|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

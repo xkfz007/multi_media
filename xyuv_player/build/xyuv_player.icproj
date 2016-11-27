@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="gb2312"?>
+<VisualStudioProject
+	ProjectType="Intel C++ Project"
+	Version="11.1"
+	Name="xyuv_player"
+	ProjectGUID="{239B5911-F4F2-4897-B19D-5263922641C9}"
+	VCNestedProjectGUID="{B3D8967E-1227-41E4-933F-67B4EE0C67BE}"
+	VCNestedProjectFileName="xyuv_player.vcproj">
+	<Configurations>
+		<Configuration
+			Name="Debug|Win32">
+			<Tool
+				Name="CppCmplrTool"
+				C99Support="true"/>
+		</Configuration>
+	</Configurations>
+	<Files/>
+</VisualStudioProject>
