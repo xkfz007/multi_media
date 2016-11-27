@@ -177,6 +177,10 @@
 				RelativePath="..\xyuv.c"
 				>
 			</File>
+			<File
+				RelativePath="..\yay.c"
+				>
+			</File>
 		</Filter>
 		<Filter
 			Name="Header Files"
