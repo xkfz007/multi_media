@@ -1,1 +1,0 @@
-MpegTsAnalyzer.exe -VPid 514 -APid 648 -InFile E:\Temp\StreamingServer\voomhd_high_sent_dump.ts > r.txt
