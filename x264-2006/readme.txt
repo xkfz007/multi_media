@@ -1,1 +1,0 @@
-This is version x264-snapshot-20060316-2245
